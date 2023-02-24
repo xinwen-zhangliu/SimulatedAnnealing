@@ -1,0 +1,58 @@
+#include <stdio.h>
+#include <sqlite3.h>
+#include <string.h>
+
+
+int main(int argc, char** argv)
+{
+    
+    char                 q[999];
+    sqlite3*             db;
+    sqlite3_stmt*        stmt;
+    int                  row = 0;
+    int                  bytes;
+    const unsigned char* text;
+
+   
+    q[sizeof q - 1] = '\0';
+    snprintf(
+        q,
+        sizeof q - 1,
+        "SELECT * FROM items WHERE id IN '%s'",
+        username
+    );
+
+    if (sqlite3_open ("test.db", &db) != SQLITE_OK) {
+        fprintf(stderr, "Error opening database.\n");
+        return 2;
+    }
+
+    printf("Query: %s\n", q);
+
+    sqlite3_prepare(db, q, sizeof q, &stmt, NULL);
+
+    bool done = false;
+    while (!done) {
+        printf("In select while\n");
+        switch (sqlite3_step (stmt)) {
+        case SQLITE_ROW:
+            bytes = sqlite3_column_bytes(stmt, 0);
+            text  = sqlite3_column_text(stmt, 1);
+            printf ("count %d: %s (%d bytes)\n", row, text, bytes);
+            row++; 
+            break;
+
+        case SQLITE_DONE:
+            done = true;
+            break;
+
+        default:
+            fprintf(stderr, "Failed.\n");
+            return 1;
+        }
+    }
+
+    sqlite3_finalize(stmt);
+
+    return 0;
+}
