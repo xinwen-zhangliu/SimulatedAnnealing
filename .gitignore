@@ -3,4 +3,4 @@
 .projectile
 
 -- target files from cargo
-./target
+/target
