@@ -1,3 +1,6 @@
 
 -- emac project file
 .projectile
+
+-- target files from cargo
+./target

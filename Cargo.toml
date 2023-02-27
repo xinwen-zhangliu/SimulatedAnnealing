@@ -1,11 +1,10 @@
 [package]
-name = "SimulatedAnnealing"
+name = "simulated_annealing"
 version = "0.1.0"
 edition = "2021"
 [dependencies]
-include-sqlite-sql = "0.2"
+ordered-float = { version = "3.0", default-features = false }
 sqlite = "0.30.4"
-
 libm = "0.2.6"
 rand = "0.8.5"
 rand_distr = "0.4.3"
