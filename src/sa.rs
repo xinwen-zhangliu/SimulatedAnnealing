@@ -44,8 +44,8 @@ impl SimAnn {
 
     pub fn prepare(&mut self) {
         //read database and get all the cities and connections
-        let case: Cases = Cases::new();
-        let reader: Reader = Reader::new((*self.initial_solution).to_vec(), "../db/citiesDB.db");
+       
+        let reader: Reader = Reader::new( "db/citiesDB.db");
         self.get_cities_connections(&reader);
         self.normalizer(&reader);
         self.sum_of_distances = self.add_distances();
@@ -55,11 +55,22 @@ impl SimAnn {
         println!("norm : {}", self.normalizer);
     }
 
-    fn get_cost() {}
+    pub fn get_cost(&self) -> f64{
+        self.sum_of_distances / self.normalizer
+    }
 
+    pub fn get_max_distance(&self) -> f64{
+        self.max_distance
+    }
+
+    pub fn get_normalizer(&self) -> f64 {
+        self.normalizer
+    }
+    
     fn normalizer(&mut self, reader : &Reader) {
+         
         let mut arr: Vec<f64> = vec![0.0f64];
-        arr = reader.get_distances_ordered();
+        arr = reader.get_distances_ordered(&self.initial_solution);
         self.max_distance = arr[0];
         let mut count: usize = 0;
         let mut sum: f64 = 0.0;
@@ -140,6 +151,7 @@ impl SimAnn {
                 sin((Self::to_rad(city2.long) - Self::to_rad(city1.long)) / 2.0),
                 2.0,
             ));
+       
         let C = 2.0 * atan2(sqrt(A), sqrt(1.0 - A));
         let R = 6373000.0;
         R * C

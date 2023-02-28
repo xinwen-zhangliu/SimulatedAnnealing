@@ -1,31 +1,26 @@
-use simulated_annealing::sa::SimAnn;
 use simulated_annealing::reader::Reader;
+use simulated_annealing::sa::SimAnn;
 use simulated_annealing::testCases::Cases;
-   
-
 
 use float_cmp::ApproxEq;
 #[cfg(test)]
-mod tests{
-    use sqlite::Connection;
-    use simulated_annealing::city::City;
+mod tests {
     use float_cmp::approx_eq;
+    use simulated_annealing::city::City;
+    use sqlite::Connection;
 
     use super::*;
-    
-    
 
     #[test]
-    fn test_nat_distance(){
-        let query = r#"SELECT * FROM connections ORDER BY RANDOM() LIMIT 15;"#;
-        let reader : Reader = Reader::new(Cases::new().l40, "db/citiesDB.db");
-        let all_cities : Vec<City> = reader.read_cities();
-        let all_connections : Vec<Vec<f64>> = reader.read_connections();
-        let sa : SimAnn = SimAnn::new(Cases::new().l40.len().try_into().unwrap(), Cases::new().l40);
+    fn test_nat_distance() {
+        //we get 25 random pairs of cities and compare it witht he result from calculating the natural distance
+        let query = r#"SELECT * FROM connections ORDER BY RANDOM() LIMIT 25;"#;
+        let reader: Reader = Reader::new("db/citiesDB.db");
+        let all_cities: Vec<City> = reader.read_cities();
+        let sa: SimAnn = SimAnn::new(Cases::new().l40.len().try_into().unwrap(), Cases::new().l40);
 
-        let connection  = Connection::open("db/citiesDB.db").unwrap();
-        for row in 
-            connection
+        let connection = Connection::open("db/citiesDB.db").unwrap();
+        for row in connection
             .prepare(query)
             .unwrap()
             .into_iter()
@@ -34,31 +29,63 @@ mod tests{
             let city1 = row.read::<i64, _>("id_city_1");
             let city2 = row.read::<i64, _>("id_city_2");
             let dist = row.read::<f64, _>("distance");
-            
-            let nat_dist : f64 = sa.get_nat_distance(all_cities[city1 as usize -1], all_cities[city2 as usize -1]);
-            dbg!( dist , nat_dist); 
-            assert!( approx_eq!(f64, dist, nat_dist, epsilon = 0.01, ulps = 2) );
+
+            let nat_dist: f64 = sa.get_nat_distance(
+                all_cities[city1 as usize - 1],
+                all_cities[city2 as usize - 1],
+            );
+       
+            println!(
+                "{} , {} : {:.15} = {:.15}",
+                city1,
+                city2,
+                dist * 1.0,
+                nat_dist
+            );
+            dbg!(city1, city2, dist * 1.0, nat_dist);
+            assert!(approx_eq!(f64, dist, nat_dist, epsilon = 0.01, ulps = 2));
         }
     }
 
-
     #[test]
-    fn test_cost_function(){
-        let case : Cases = Cases::new();
-        //        let reader : Reader = Reader::new( "")
-        let sa40 : SimAnn = SimAnn::new(case.l40.len().try_into().unwrap(), case.l40);
-        let cost40 : f64 = 4129508.339517763;
-        let md40 : f64 = 4947749.059999999590218;
-        let norm40 : f64 = 180088219.480000019073486;
+    fn test_cost_function() {
+        let case: Cases = Cases::new();
+        let mut results: Vec<f64> = Vec::new();
+        let reader: Reader = Reader::new("db/citiesDB.db");
+        let mut sa40: SimAnn = SimAnn::new(case.l40.len().try_into().unwrap(), case.l40);
+        let mut sa150: SimAnn = SimAnn::new(case.l150.len().try_into().unwrap(), case.l150);
 
-        let sa150 : SimAnn = SimAnn::new(case.l150.len().try_into().unwrap(), case.l150);
-        let cost150 : f64 = 6249022.603226478;
-        let md150 : f64 = 4979370.000000000000000000;
-        let norm150 : f64 = 721914154.580000042915344;
-        //let new_cost150 : f64 = 
+        let all_cities: Vec<City> = reader.read_cities();
+        sa40.prepare();
+        sa150.prepare();
+        results.push(sa40.get_cost());
+        results.push(sa40.get_max_distance());
+        results.push(sa40.get_normalizer());
+        results.push(sa150.get_cost());
+        results.push(sa150.get_max_distance());
+        results.push(sa150.get_normalizer());
+        let cost2 = sa150.get_cost();
 
-        
-        //assert!( approx_eq!(f64, a, b, epsilon = 0.00000003) );
+        //cost max_distance normalizer
+        //first for the case with 40 cities then for the case with 150 cities
+        let cases: Vec<f64> = vec![
+            4129508.339517763,
+            4947749.059999999590218,
+            180088219.480000019073486,
+            6249022.603226478,
+            4979370.000000000000000000,
+            721914154.580000042915344,
+        ];
+
+        for i in 0..6 {
+            println!("{} = {} ", cases[i], results[i]);
+            assert!(approx_eq!(
+                f64,
+                cases[i],
+                results[i],
+                epsilon = 0.000000001,
+                ulps = 10
+            ));
+        }
     }
-    
 }

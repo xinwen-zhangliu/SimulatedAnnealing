@@ -22,7 +22,9 @@ impl Reader {
         //if connection is not open then panic
     }
 
-    fn close_connection(&self) {}
+    fn close_connection(&self) {
+        
+    }
 
     pub fn get_distances_ordered(&self, cities : &Vec<u16>) -> Vec<f64> {
         
