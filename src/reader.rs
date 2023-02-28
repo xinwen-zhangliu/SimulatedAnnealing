@@ -1,11 +1,11 @@
 use crate::city::City;
 
-use sqlite::{Connection, Value};
+use sqlite::{Connection};
 
 pub struct Reader {
     cities: Vec<u16>,
     connection: Connection,
-    //distances: Option<&'a mut [f64]>,
+    
 }
 
 impl Reader {
@@ -16,7 +16,7 @@ impl Reader {
     pub fn new(list: Vec<u16>, path: &str) -> Reader {
         Reader {
             cities: list,
-            connection: Connection::open("../db/citiesDB.db").unwrap(),
+            connection: Connection::open(path).unwrap(),
         }
     }
 
@@ -26,8 +26,8 @@ impl Reader {
 
     fn close_connection(&self) {}
 
-    pub fn get_distances_ordered(&self) -> Box<Vec<f64>> {
-        //convert tthe vector of cities to string in this format (a,b,....,n)
+    pub fn get_distances_ordered(&self) -> Vec<f64> {
+        
         let begin: &str = "(";
         let end: &str = ")";
         let body = self
@@ -38,28 +38,16 @@ impl Reader {
             .join(",");
 
         let list = format!("{}{}{}", begin, body, end);
-        let list2 = list.clone();
 
         println!("query with binding : {} ", list);
-
-        // SELECT distance FROM connections
-        // WHERE id_city_1 IN list
-        //     GROUP BY id_city_2
-        //     HAVING id_city_2 IN list;
         let query = "SELECT distance FROM connections WHERE id_city_1 IN ".to_owned()
-                                    + &list + &" AND  id_city_2 IN ".to_owned()
-                                   + &list+ &" ORDER BY distance DESC;".to_owned();
+            + &list
+            + &" AND  id_city_2 IN ".to_owned()
+            + &list
+            + &" ORDER BY distance DESC;".to_owned();
 
-
-            // "SELECT distance FROM connections WHERE id_city_1 IN ".to_owned()
-            // + &list
-            // + &" GROUP BY id_city_2 HAVING id_city_2 IN ".to_owned()
-            // + &list
-            // + &" ORDER BY distance DESC;".to_owned();
-
-        // "SELECT distance FROM connections WHERE id_city_1 IN ".to_owned()
-        //                            + &list + &" AND  id_city_2 IN ".to_owned()
-        //                            + &list+ &" ORDER BY distance DESC;".to_owned();
+        //  let query = "SELECT distances FROM connections
+        // WHERE id_city_1 IN :cities AND id_city_2 IN :cities ORDER BY DESC;";
 
         let mut distances: Vec<f64> = Vec::new();
         for row in self
@@ -67,19 +55,13 @@ impl Reader {
             .prepare(query)
             .unwrap()
             .into_iter()
-            //.bind((":cities", list.as_str()))
-            // .bind::<&[(_, Value)]>(&[
-            //     (":cities1", list.into()),
-            //     (":cities2", list2.into()),
-            // ][..])
-            // .unwrap()
             .map(|row| row.unwrap())
         {
             let distance = row.read::<f64, _>("distance");
             distances.push(distance);
         }
 
-        Box::new(distances)
+        distances
     }
 
     pub fn read_cities(&self) -> Vec<City> {
@@ -101,7 +83,7 @@ impl Reader {
         all_cities
     }
 
-    pub fn read_connections(&self) -> Box<Vec<Vec<f64>>> {
+    pub fn read_connections(&self) -> Vec<Vec<f64>> {
         let query = "SELECT * FROM connections;";
         let mut all_connections = vec![vec![0.0f64; 1092]; 1092];
         for row in self
@@ -118,6 +100,8 @@ impl Reader {
             let c2 = usize::try_from(city2).unwrap();
             all_connections[c1 - 1][c2 - 1] = distance;
         }
-        Box::new(all_connections)
+        all_connections
     }
+
+    
 }
