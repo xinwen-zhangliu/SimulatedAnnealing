@@ -5,3 +5,4 @@ pub struct City{
     pub lat : f64,
     pub long : f64,
 }
+

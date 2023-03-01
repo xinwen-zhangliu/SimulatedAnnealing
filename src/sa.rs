@@ -9,9 +9,15 @@ use std::f64::consts::PI;
 
 //use simulated_annealing::sa::SimAnn::{to_rad};
 
+pub struct Solution {
+    pub cities: Vec<u16>,
+    pub cost: f64,
+}
+
 pub struct SimAnn {
     temperature: f64,
     initial_solution: Vec<u16>,
+    new_solution: Vec<u16>,
     num_of_cities: u16,
     n1: u16,
     n2: u16,
@@ -23,7 +29,7 @@ pub struct SimAnn {
     all_connections: Vec<Vec<f64>>, //vec![vec![f64;1092];1092],
     max_distance: f64,
     r: StdRng,
-    //reader : Reader,
+    //solution: Solution,
 }
 
 impl SimAnn {
@@ -33,25 +39,31 @@ impl SimAnn {
             //reader : Reader::new( "../db/citiesDB.db"),
             initial_solution: list_of_cities,
             temperature: 0.0,
+            new_solution: vec![0; num as usize],
             num_of_cities: num,
             n1: 0,
             n2: 0,
             sum_of_distances: 0.0,
             normalizer: 0.0,
-            all_cities: vec![City {
-                id: 0,
-                lat: 0.0,
-                long: 0.0,
-            }],
+            all_cities: vec![
+                City {
+                    id: 0,
+                    lat: 0.0,
+                    long: 0.0,
+                };
+                num as usize
+            ],
             all_connections: vec![vec![0.0f64; 1092]; 1092],
             max_distance: 0.0,
             r: StdRng::seed_from_u64(7),
+            // solution: Solution {
+            //     cities: list_of_cities,
+            //     cost: 0.0,
+            // },
         }
     }
 
     pub fn prepare(&mut self) {
-        //read database and get all the cities and connections
-
         let reader: Reader = Reader::new("db/citiesDB.db");
 
         self.get_cities_connections(&reader);
@@ -61,11 +73,16 @@ impl SimAnn {
         println!("cost : {}", (self.sum_of_distances / self.normalizer));
         println!("dist_max : {}", self.max_distance);
         println!("norm : {}", self.normalizer);
-        println!("1, 7 , db : {:.15} , fn : {:.15}", self.all_connections[0][6], self.get_nat_distance(self.all_cities[0], self.all_cities[6]));
+        println!(
+            "1, 7 , db : {:.15} , fn : {:.15}",
+            self.all_connections[0][6],
+            self.get_nat_distance(self.all_cities[0], self.all_cities[6])
+        );
         self.get_initial_solution();
+        self.get_neighbor();
     }
 
-    pub fn get_cost(&self) -> f64 {
+    pub fn get_cost(&self,) -> f64 {
         self.sum_of_distances / self.normalizer
     }
 
@@ -102,26 +119,48 @@ impl SimAnn {
     fn add_distances(&mut self) -> f64 {
         let mut sum: f64 = 0.0;
         for i in 1..self.num_of_cities as usize {
-            if self.all_connections[usize::try_from(self.initial_solution[i - 1]).unwrap() - 1]
-                [usize::try_from(self.initial_solution[i]).unwrap() - 1]
-                == 0.0
-            {
-                
-                let dist = self.get_unknown_distance(
-                    self.all_cities[(self.initial_solution[i - 1] as usize) - 1],
-                    self.all_cities[(self.initial_solution[i] as usize) - 1],
-                );
+            let mut row: usize = usize::try_from(self.initial_solution[i - 1]).unwrap() - 1;
+            let mut column: usize = usize::try_from(self.initial_solution[i]).unwrap() - 1;
+
+            if self.initial_solution[i - 1] > self.initial_solution[i] {
+                row = usize::try_from(self.initial_solution[i]).unwrap() - 1;
+                column = usize::try_from(self.initial_solution[i - 1]).unwrap() - 1;
+            }
+            if self.all_connections[row][column] == 0.0 {
+                let dist = self.get_unknown_distance(self.all_cities[row], self.all_cities[column]);
                 sum += dist;
-                self.all_connections[usize::try_from(self.initial_solution[i - 1]).unwrap() - 1]
-                    [usize::try_from(self.initial_solution[i]).unwrap() - 1] = dist;
+                self.all_connections[row][column] = dist;
+                self.all_connections[column][row] = dist;
+                dbg!(i,dist);
             } else {
-                let dist = self.all_connections
-                    [usize::try_from(self.initial_solution[i - 1]).unwrap() - 1]
-                    [usize::try_from(self.initial_solution[i]).unwrap() - 1];
+                let dist = self.all_connections[row][column];
                 sum += dist;
+                dbg!(i, dist);
             }
         }
         sum
+    }
+
+
+    fn fill_distances(&mut self){
+        for i in 1..1092 as usize {
+            // let mut row: usize = usize::try_from(self.initial_solution[i - 1]).unwrap() - 1;
+            // let mut column: usize = usize::try_from(self.initial_solution[i]).unwrap() - 1;
+
+            // if self.initial_solution[i - 1] > self.initial_solution[i] {
+            //     row = usize::try_from(self.initial_solution[i]).unwrap() - 1;
+            //     column = usize::try_from(self.initial_solution[i - 1]).unwrap() - 1;
+            // }
+            for j in 1..1092 as usize {
+                if self.all_connections[i][j] == 0.0 {
+                let dist = self.get_unknown_distance(self.all_cities[i], self.all_cities[j]);
+               
+                self.all_connections[i][j] = dist;
+                self.all_connections[j][i] = dist;
+            } 
+            }
+            
+        }
     }
 
     fn get_cities_connections(&mut self, reader: &Reader) {
@@ -146,11 +185,10 @@ impl SimAnn {
 
         let C = 2.0 * atan2(sqrt(A), sqrt(1.0 - A));
         let R = 6373000.0;
-        dbg!(A, C, Self::to_rad(city2.lat),Self::to_rad(city1.lat), Self::to_rad(city2.long) , Self::to_rad(city1.long));
-        dbg!(city2.lat,city1.lat, city2.long ,city1.long);
-        dbg!(PI);
         R * C
     }
+
+    
 
     fn to_rad(num: f64) -> f64 {
         num * PI / 180.0
@@ -167,19 +205,86 @@ impl SimAnn {
                 self.initial_solution[index as usize] = value;
             }
         }
+        let new_initial_solution = self
+            .initial_solution
+            .iter()
+            .map(|x| x.to_string())
+            .collect::<Vec<_>>()
+            .join(",");
+        dbg!(new_initial_solution);
     }
 
-    fn get_neighbor(&mut self, cities : &Vec<u16>) {
-        self.n1 = self.r.gen();
-        self.n2 = self.r.gen();
+    fn get_neighbor(&mut self) {
+        self.n1 = self.r.gen::<u16>() % self.num_of_cities;
+        self.n2 = self.r.gen::<u16>() % self.num_of_cities;
+        let value = self.initial_solution[self.n1 as usize];
+        self.initial_solution[self.n1 as usize] = self.initial_solution[self.n2 as usize];
+        self.initial_solution[self.n2 as usize] = value;
+        let new_initial_solution = self
+            .initial_solution
+            .iter()
+            .map(|x| x.to_string())
+            .collect::<Vec<_>>()
+            .join(",");
+        dbg!(self.n1, self.n2, new_initial_solution);
+        //delete this later
+        self.update_sum();
+    }
+
+    fn ctrlz(&mut self) {
         let value = self.initial_solution[self.n1 as usize];
         self.initial_solution[self.n1 as usize] = self.initial_solution[self.n2 as usize];
         self.initial_solution[self.n2 as usize] = value;
     }
 
-    fn ctrlz() {}
-
-    fn calculate_batch() -> (f64, f64) {
+    fn calculate_batch(&mut self, temp: f64, solution: &Vec<u16>) -> (f64, f64) {
+        let mut counter = 0;
+        let mut sum: f64 = 0.0;
+        let batch = 5;
+        while counter < batch {
+            self.get_neighbor();
+        }
         (0.0, 0.0)
     }
+
+    fn update_sum(&mut self) {
+        self.fill_distances();
+        let n1 = usize::try_from(self.n1).unwrap();
+        let n2 = usize::try_from(self.n2).unwrap();
+        
+        let id1: usize = usize::try_from(self.initial_solution[n1 -1] - 1).unwrap();
+        let id2: usize = usize::try_from(self.initial_solution[n1 ] - 1).unwrap();
+        let id3: usize = usize::try_from(self.initial_solution[n1+1] - 1).unwrap();
+
+        let id4 = usize::try_from(self.initial_solution[n2 -1]-1).unwrap();
+        let id5 = usize::try_from(self.initial_solution[n2 ]-1).unwrap();
+        let id6 = usize::try_from(self.initial_solution[n2+1]-1).unwrap();
+
+        self.sum_of_distances +=
+            self.all_connections[id1][id2]
+            + self.all_connections[id2][id3]
+            + self.all_connections[id4][id5]
+            + self.all_connections[id5][id6];
+
+         self.sum_of_distances -=
+            self.all_connections[id1][id5]
+            + self.all_connections[id5][id3]
+            + self.all_connections[id4][id2]
+            + self.all_connections[id2][id6];
+        dbg!(id1, id2, id3, id4, id5, id6);
+        dbg!( self.all_connections[id1][id2]
+            , self.all_connections[id2][id3]
+            , self.all_connections[id4][id5]
+              , self.all_connections[id5][id6]);
+        dbg!(self.all_connections[id1][id5]
+             , self.all_connections[id5][id3]
+            , self.all_connections[id4][id2]
+            , self.all_connections[id2][id6]);
+        dbg!(self.sum_of_distances);
+        
+        
+        dbg!(self.add_distances());
+    }
+
+    fn threshold_acceptance() {}
 }

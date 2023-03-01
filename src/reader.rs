@@ -103,6 +103,7 @@ impl Reader {
             let c1 = usize::try_from(city1).unwrap();
             let c2 = usize::try_from(city2).unwrap();
             all_connections[c1 - 1][c2 - 1] = distance;
+            all_connections[c2 -1][c1-1] = distance;
         }
         all_connections
     }
