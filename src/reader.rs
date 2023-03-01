@@ -1,18 +1,19 @@
 use crate::city::City;
 
-use sqlite::{Connection};
+use sqlite::Connection;
 
 pub struct Reader {
     connection: Connection,
-    
 }
+
+
 
 impl Reader {
     fn open_connection(path: &str) -> Connection {
         Connection::open(path).unwrap()
     }
 
-    pub fn new( path: &str) -> Reader {
+    pub fn new(path: &str) -> Reader {
         Reader {
             connection: Connection::open(path).unwrap(),
         }
@@ -24,8 +25,7 @@ impl Reader {
 
     fn close_connection(&self) {}
 
-    pub fn get_distances_ordered(&self, cities : &Vec<u16>) -> Vec<f64> {
-        
+    pub fn get_distances_ordered(&self, cities: &Vec<u16>) -> Vec<f64> {
         let begin: &str = "(";
         let end: &str = ")";
         let body = cities
@@ -80,9 +80,16 @@ impl Reader {
         all_cities
     }
 
+    
+
+    
     pub fn read_connections(&self) -> Vec<Vec<f64>> {
         let query = "SELECT * FROM connections;";
-        let mut all_connections = vec![vec![0.0f64; 1092]; 1092];
+        dbg!("asdas");
+        let mut all_connections = vec![vec![0.0f64 ; 1092];1092];
+        dbg!("as");
+
+        
         for row in self
             .connection
             .prepare(query)

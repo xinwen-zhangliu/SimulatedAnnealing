@@ -4,3 +4,7 @@
 
 -- target files from cargo
 /target
+
+
+--auto save files
+#hoc.pdf#

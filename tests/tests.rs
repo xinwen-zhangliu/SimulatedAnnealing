@@ -1,8 +1,9 @@
 use simulated_annealing::reader::Reader;
 use simulated_annealing::sa::SimAnn;
 use simulated_annealing::testCases::Cases;
-
 use float_cmp::ApproxEq;
+
+#[crate_name = "tests"]
 #[cfg(test)]
 mod tests {
     use float_cmp::approx_eq;
@@ -12,6 +13,7 @@ mod tests {
     use super::*;
 
     #[test]
+    /// Tests the function get_nat_distance in SimAnn against the distances in the database, byt getting a random selection of 25 pairs.
     fn test_nat_distance() {
         //we get 25 random pairs of cities and compare it witht he result from calculating the natural distance
         let query = r#"SELECT * FROM connections ORDER BY RANDOM() LIMIT 25;"#;
@@ -34,7 +36,7 @@ mod tests {
                 all_cities[city1 as usize - 1],
                 all_cities[city2 as usize - 1],
             );
-       
+
             println!(
                 "{} , {} : {:.15} = {:.15}",
                 city1,
@@ -48,6 +50,7 @@ mod tests {
     }
 
     #[test]
+    /// Tests the cost function, maximum distance and normalizer of the cases with 40 and 150 cities, against predefined values.
     fn test_cost_function() {
         let case: Cases = Cases::new();
         let mut results: Vec<f64> = Vec::new();
