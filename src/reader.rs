@@ -6,8 +6,6 @@ pub struct Reader {
     connection: Connection,
 }
 
-
-
 impl Reader {
     fn open_connection(path: &str) -> Connection {
         Connection::open(path).unwrap()
@@ -18,12 +16,6 @@ impl Reader {
             connection: Connection::open(path).unwrap(),
         }
     }
-
-    fn check_connection() {
-        //if connection is not open then panic
-    }
-
-    fn close_connection(&self) {}
 
     pub fn get_distances_ordered(&self, cities: &Vec<u16>) -> Vec<f64> {
         let begin: &str = "(";
@@ -80,16 +72,12 @@ impl Reader {
         all_cities
     }
 
-    
-
-    
     pub fn read_connections(&self) -> Vec<Vec<f64>> {
         let query = "SELECT * FROM connections;";
         dbg!("asdas");
-        let mut all_connections = vec![vec![0.0f64 ; 1092];1092];
+        let mut all_connections = vec![vec![0.0f64; 1092]; 1092];
         dbg!("as");
 
-        
         for row in self
             .connection
             .prepare(query)
@@ -102,11 +90,9 @@ impl Reader {
             let distance = row.read::<f64, _>("distance");
             let c1 = usize::try_from(city1).unwrap();
             let c2 = usize::try_from(city2).unwrap();
-            all_connections[c1 - 1][c2 - 1] = distance;
-            all_connections[c2 -1][c1-1] = distance;
+            all_connections[c1  - 1][c2 - 1] = distance;
+            all_connections[c2 - 1][c1 - 1] = distance;
         }
         all_connections
     }
-
-    
 }

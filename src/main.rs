@@ -31,8 +31,9 @@ fn main() -> Result<()> {
     let cities : Vec<u16>= cases.l40;
     let mut sa: SimAnn = SimAnn::new(cities.len().try_into().unwrap(), cities);
     sa.prepare();
-
-   
+       // sa.fill_distances();
+    
+    
 
     Ok(())
 }
