@@ -8,6 +8,7 @@ use std::env;
 
 use simulated_annealing::sa::SimAnn;
 use simulated_annealing::testCases::Cases;
+use simulated_annealing::tsp::Solution;
 
 fn main() -> Result<()> {
     /*
@@ -29,11 +30,12 @@ fn main() -> Result<()> {
     
     let cases: Cases = Cases::new();
     let cities : Vec<u16>= cases.l40;
-    let mut sa: SimAnn = SimAnn::new(cities.len().try_into().unwrap(), cities);
+    let mut sa: SimAnn = SimAnn::new(cities.len().try_into().unwrap(), &cities);
     sa.prepare();
        // sa.fill_distances();
     
-    
+    let mut sol : Solution = Solution::new(0.002, 8.0, 0.95, &cities, 2000);
+    sol.threshold_acceptance();
 
     Ok(())
 }

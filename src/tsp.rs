@@ -1,60 +1,87 @@
-use simulated_annealing::sa::SimAnn;
-
+use crate::sa::SimAnn;
 
 trait TA {
     fn calcula_lote() -> (f64, f64);
     fn threshold_acceptance();
 }
 
-struct Solution {
+pub struct Solution {
     cities: Vec<u16>,
-    cost: f64,
-    epsilon : f64,
-    phi : f64,
-    temp : f64,
-    sa : SimAnn,
-  
+    epsilon: f64,
+    phi: f64,
+    temp: f64,
+    sa: SimAnn,
+    L: u32,
+    best_path : Vec<u16>,
+    best_eval : f64,
 }
 
-impl Solution {
-    pub fn new(epsilon: f64, initial_temp: f64, phi: f64, cities: &Vec<u16>) -> Self {
+impl Solution{
+    pub fn new(epsilon: f64, initial_temp: f64, phi: f64,  cities: &Vec<u16>, L: u32) -> Self {
+        let len = cities.len();
         Self {
-            cities, cost : 0.0, epsilon, phi, temp :  initial_temp,
-            sa : SimAnn::new(cities.len(), cities)
-            
-            
+           cities :  cities.clone(),
+            epsilon,
+            phi,
+            temp: initial_temp,
+            sa: SimAnn::new(len, &cities),
+            L,
+            best_path : cities.clone(),
+            best_eval : 0.0
         }
     }
 
-    fn calculate_batch(&mut self, temp: f64, solution: &Vec<u16>) -> f64 {
+    fn calculate_batch(&mut self)  -> f64 {
         let mut counter = 0;
-        let mut sum: f64 = 0.0;
-        let batch = 5;
+        let batch = 2000;
         let mut r = 0.0;
-        while counter < batch {
-            let s2 =  sa.get_neighbor(self.cities);
-            if sa.get_cost(s2) <= (sa.get_cost(cities) + self.temp){
-                cities = s2;
-                counter+=1;
-                r+= sa.get_cost(s2);
+        while counter < self.L {
+            let mut s2 = self.cities.clone();
+             self.sa.get_neighbor(&mut s2[..]);
+            let new_cost = self.sa.get_cost(&mut s2);
+            let last_cost = self.sa.get_cost(&mut self.cities)+ self.temp;
+            
+            if new_cost < last_cost {
+                println!("E : {}", self.sa.get_cost(&mut s2));
+                self.cities = s2.clone();
+                counter += 1;
+                r += self.sa.get_cost(&mut s2);
+
+                if  new_cost <= (self.sa.get_cost(&mut self.best_path) ){
+                    self.best_path = s2.clone();
+                    self.best_eval = self.sa.get_cost(&mut self.best_path);
+                }
+                
+              
             }
         }
-        r/batch
+        r / f64::try_from(batch).unwrap()
     }
 
-    fn threshold_acceptance() {
-
-        
-        let batch_average: f64 = 0.0;
-        //let epsilon = 0.0; //change later
+    pub fn threshold_acceptance(&mut self) {
+        self.sa.prepare();
+        self.cities = self.sa.get_initial_solution(&mut self.cities);
+        let mut batch_average: f64 = 10000000000.0;
         while self.temp > self.epsilon {
             let mut q: f64 = f64::INFINITY;
             while batch_average < q {
                 q = batch_average;
-                batch_average  = self.calculate_batch(self.temp, self.cities);
+                batch_average = self.calculate_batch();
             }
-            
-            temp = self.phi * temp;
+            self.temp = self.phi * self.temp;
+            dbg!(self.temp);
+
         }
+        dbg!(self.best_eval);
+        let best_sol = self
+            .best_path
+            .iter()
+            .map(|x| x.to_string())
+            .collect::<Vec<_>>()
+            .join(",");
+        dbg!(best_sol);
+        
     }
+
+    
 }
