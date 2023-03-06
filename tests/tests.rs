@@ -19,7 +19,7 @@ mod tests {
         let query = r#"SELECT * FROM connections ORDER BY RANDOM() LIMIT 25;"#;
         let reader: Reader = Reader::new("db/citiesDB.db");
         let all_cities: Vec<City> = reader.read_cities();
-        let sa: SimAnn = SimAnn::new(Cases::new().l40.len().try_into().unwrap(), Cases::new().l40);
+        let sa: SimAnn = SimAnn::new(Cases::new().l40.len().try_into().unwrap(), &Cases::new().l40);
 
         let connection = Connection::open("db/citiesDB.db").unwrap();
         for row in connection
@@ -52,22 +52,22 @@ mod tests {
     #[test]
     /// Tests the cost function, maximum distance and normalizer of the cases with 40 and 150 cities, against predefined values.
     fn test_cost_function() {
-        let case: Cases = Cases::new();
+        let mut case: Cases = Cases::new();
         let mut results: Vec<f64> = Vec::new();
         let reader: Reader = Reader::new("db/citiesDB.db");
-        let mut sa40: SimAnn = SimAnn::new(case.l40.len().try_into().unwrap(), case.l40);
-        let mut sa150: SimAnn = SimAnn::new(case.l150.len().try_into().unwrap(), case.l150);
+        let mut sa40: SimAnn = SimAnn::new(case.l40.len().try_into().unwrap(), &case.l40);
+        let mut sa150: SimAnn = SimAnn::new(case.l150.len().try_into().unwrap(), &case.l150);
 
         let all_cities: Vec<City> = reader.read_cities();
         sa40.prepare();
         sa150.prepare();
-        results.push(sa40.get_cost());
+        results.push(sa40.get_cost(&mut case.l40));
         results.push(sa40.get_max_distance());
         results.push(sa40.get_normalizer());
-        results.push(sa150.get_cost());
+        results.push(sa150.get_cost(&mut case.l150));
         results.push(sa150.get_max_distance());
         results.push(sa150.get_normalizer());
-        let cost2 = sa150.get_cost();
+        
 
         //cost max_distance normalizer
         //first for the case with 40 cities then for the case with 150 cities
@@ -90,5 +90,12 @@ mod tests {
                 ulps = 10
             ));
         }
+    }
+
+
+    fn test_sum_of_distances() {
+        let sa: SimAnn = SimAnn::new(Cases::new().l40.len().try_into().unwrap(), &Cases::new().l40);
+        let mut cities = sa.get_neighbor();
+        
     }
 }

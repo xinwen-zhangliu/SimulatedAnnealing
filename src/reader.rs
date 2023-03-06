@@ -17,7 +17,7 @@ impl Reader {
         }
     }
 
-    pub fn get_distances_ordered(&self, cities: &Vec<u16>) -> Vec<f64> {
+    pub fn get_distances_ordered(&self, cities: &Vec<usize>) -> Vec<f64> {
         let begin: &str = "(";
         let end: &str = ")";
         let body = cities
@@ -28,7 +28,7 @@ impl Reader {
 
         let list = format!("{}{}{}", begin, body, end);
 
-        println!("query with binding : {} ", list);
+
         let query = "SELECT distance FROM connections WHERE id_city_1 IN ".to_owned()
             + &list
             + &" AND  id_city_2 IN ".to_owned()
@@ -74,9 +74,9 @@ impl Reader {
 
     pub fn read_connections(&self) -> Vec<Vec<f64>> {
         let query = "SELECT * FROM connections;";
-        dbg!("asdas");
+       
         let mut all_connections = vec![vec![0.0f64; 1092]; 1092];
-        dbg!("as");
+       
 
         for row in self
             .connection

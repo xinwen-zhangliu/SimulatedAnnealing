@@ -6,18 +6,18 @@ trait TA {
 }
 
 pub struct Solution {
-    cities: Vec<u16>,
+    cities: Vec<usize>,
     epsilon: f64,
     phi: f64,
     temp: f64,
     sa: SimAnn,
     L: u32,
-    best_path : Vec<u16>,
+    best_path : Vec<usize>,
     best_eval : f64,
 }
 
 impl Solution{
-    pub fn new(epsilon: f64, initial_temp: f64, phi: f64,  cities: &Vec<u16>, L: u32) -> Self {
+    pub fn new(epsilon: f64, initial_temp: f64, phi: f64,  cities: &Vec<usize>, L: u32) -> Self {
         let len = cities.len();
         Self {
            cities :  cities.clone(),
@@ -33,7 +33,7 @@ impl Solution{
 
     fn calculate_batch(&mut self)  -> f64 {
         let mut counter = 0;
-        let batch = 2000;
+        
         let mut r = 0.0;
         while counter < self.L {
             let mut s2 = self.cities.clone();
@@ -55,13 +55,14 @@ impl Solution{
               
             }
         }
-        r / f64::try_from(batch).unwrap()
+        r / f64::try_from(self.L).unwrap()
     }
 
     pub fn threshold_acceptance(&mut self) {
         self.sa.prepare();
         self.cities = self.sa.get_initial_solution(&mut self.cities);
-        let mut batch_average: f64 = 10000000000.0;
+        
+        let mut batch_average: f64 = 0.0;
         while self.temp > self.epsilon {
             let mut q: f64 = f64::INFINITY;
             while batch_average < q {
@@ -69,17 +70,17 @@ impl Solution{
                 batch_average = self.calculate_batch();
             }
             self.temp = self.phi * self.temp;
-            dbg!(self.temp);
-
         }
-        dbg!(self.best_eval);
+
+        // -- 
+        println!("{}", self.best_eval);
         let best_sol = self
             .best_path
             .iter()
             .map(|x| x.to_string())
             .collect::<Vec<_>>()
             .join(",");
-        dbg!(best_sol);
+        println!("[{}]", best_sol);
         
     }
 

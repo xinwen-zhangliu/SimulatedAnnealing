@@ -1,6 +1,6 @@
 pub struct Cases {
-    pub l40: Vec<u16>,
-    pub l150: Vec<u16>,
+    pub l40: Vec<usize>,
+    pub l150: Vec<usize>,
 }
 
 impl Cases {
