@@ -6,18 +6,18 @@ trait TA {
 }
 
 pub struct Solution {
-    cities: Vec<usize>,
+    cities: Vec<u16>,
     epsilon: f64,
     phi: f64,
     temp: f64,
     sa: SimAnn,
     L: u32,
-    best_path : Vec<usize>,
+    best_path : Vec<u16>,
     best_eval : f64,
 }
 
 impl Solution{
-    pub fn new(epsilon: f64, initial_temp: f64, phi: f64,  cities: &Vec<usize>, L: u32) -> Self {
+    pub fn new(epsilon: f64, initial_temp: f64, phi: f64,  cities: &Vec<u16>, L: u32) -> Self {
         let len = cities.len();
         Self {
            cities :  cities.clone(),
@@ -51,11 +51,9 @@ impl Solution{
                     self.best_path = s2.clone();
                     self.best_eval = self.sa.get_cost(&mut self.best_path);
                 }
-                
-              
             }
         }
-        r / f64::try_from(self.L).unwrap()
+        r / f64::try_from(2000).unwrap()
     }
 
     pub fn threshold_acceptance(&mut self) {

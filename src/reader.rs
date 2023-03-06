@@ -17,7 +17,7 @@ impl Reader {
         }
     }
 
-    pub fn get_distances_ordered(&self, cities: &Vec<usize>) -> Vec<f64> {
+    pub fn get_distances_ordered(&self, cities: &Vec<u16>) -> Vec<f64> {
         let begin: &str = "(";
         let end: &str = ")";
         let body = cities
