@@ -76,6 +76,9 @@ impl SimAnn {
     pub fn get_normalizer(&self) -> f64 {
         self.normalizer
     }
+    pub fn set_initial_solution(&mut self, arr: Vec<u16> ) {
+        self.initial_solution = arr;
+    }
 
     fn normalizer(&mut self, reader: &Reader) {
         let mut arr: Vec<f64> = vec![0.0f64; self.num_of_cities as usize];
@@ -102,7 +105,7 @@ impl SimAnn {
         self.all_cities = reader.read_cities();
     }
 
-    fn add_dist(&self, cities: &mut Vec<u16>) -> f64 {
+    pub fn add_dist(&self, cities: &mut Vec<u16>) -> f64 {
         let mut sum: f64 = 0.0;
         for i in 1..self.num_of_cities as usize {
             let mut row: usize = usize::try_from(cities[i - 1]).unwrap() - 1;
@@ -111,6 +114,18 @@ impl SimAnn {
             sum += dist;
         }
         sum
+    }
+
+    pub fn add_initial_distance(&mut self){
+        let mut sum: f64 = 0.0;
+        for i in 1..self.num_of_cities as usize {
+            let mut row: usize = usize::try_from(self.initial_solution[i - 1]).unwrap() - 1;
+            let mut column: usize = usize::try_from(self.initial_solution[i]).unwrap() - 1;
+            let dist = self.all_connections[row][column];
+            sum += dist;
+        }
+        self.sum_of_distances = sum;
+        
     }
 
     fn add_distances(&mut self) -> f64 {
@@ -176,8 +191,8 @@ impl SimAnn {
         num * PI / 180.0
     }
 
-    pub fn get_initial_solution(&mut self, cities : &mut Vec<u16>) -> Vec<u16>  {
-        let mut r = StdRng::seed_from_u64(42);
+    pub fn get_initial_solution(&mut self, cities : &mut Vec<u16>, seed : u64) -> Vec<u16>  {
+        let mut r = StdRng::seed_from_u64(seed);
         for i in 0..self.num_of_cities as usize {
             let n: u16 = r.gen();
             if n as usize != i {
@@ -187,14 +202,6 @@ impl SimAnn {
                 cities[index as usize] = value;
             }
         }
-        // let new_initial_solution = self
-        //     .initial_solution
-        //     .iter()
-        //     .map(|x| x.to_string())
-        //     .collect::<Vec<_>>()
-        //     .join(",");
-        // dbg!(new_initial_solution);
-        // dbg!(self.add_distances());
         cities.to_vec()
     }
 

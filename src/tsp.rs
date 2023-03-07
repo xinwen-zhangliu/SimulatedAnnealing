@@ -58,7 +58,7 @@ impl Solution{
 
     pub fn threshold_acceptance(&mut self) {
         self.sa.prepare();
-        self.cities = self.sa.get_initial_solution(&mut self.cities);
+        self.cities = self.sa.get_initial_solution(&mut self.cities, 7797);
         
         let mut batch_average: f64 = 0.0;
         while self.temp > self.epsilon {
@@ -79,6 +79,10 @@ impl Solution{
             .collect::<Vec<_>>()
             .join(",");
         println!("[{}]", best_sol);
+        
+    }
+
+    fn hill_descent(&mut self){
         
     }
 

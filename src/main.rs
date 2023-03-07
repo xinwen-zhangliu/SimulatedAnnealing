@@ -29,7 +29,7 @@ fn main() -> Result<()> {
    
     
     let cases: Cases = Cases::new();
-    let cities : Vec<u16>= cases.l40;
+    let cities : Vec<u16>= cases.l150;
     let mut sa: SimAnn = SimAnn::new(cities.len().try_into().unwrap(), &cities);
     sa.prepare();
     

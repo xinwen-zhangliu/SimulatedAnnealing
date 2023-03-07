@@ -94,8 +94,16 @@ mod tests {
 
 
     fn test_sum_of_distances() {
-        let sa: SimAnn = SimAnn::new(Cases::new().l40.len().try_into().unwrap(), &Cases::new().l40);
-        let mut cities = sa.get_neighbor();
+        let mut  case : Cases = Cases::new();
+        let mut sa: SimAnn = SimAnn::new(case.l40.len().try_into().unwrap(), &case.l40);
+        
+
+        let mut initial_solution = sa.get_initial_solution();
+        sa.add_initial_distance();
+            for i in 1..10{
+                
+                let mut cities = sa.get_neighbor(&mut case.l40[..]);
+            }
         
     }
 }
