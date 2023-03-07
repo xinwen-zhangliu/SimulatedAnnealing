@@ -11,7 +11,7 @@ use std::f64::consts::PI;
 //use simulated_annealing::sa::SimAnn::{to_rad};
 
 pub struct SimAnn {
-    initial_solution: Vec<u16>,
+    initial_solution: Vec<usize>,
     num_of_cities: usize,
     n1: usize,
     n2: usize,
@@ -27,8 +27,8 @@ pub struct SimAnn {
 }
 
 impl SimAnn {
-    pub fn new(num: usize, cities: &Vec<u16>) -> Self {
-        let new: Vec<u16> = cities.to_vec();
+    pub fn new(num: usize, cities: &Vec<usize>) -> Self {
+        let new: Vec<usize> = cities.to_vec();
         Self {
             initial_solution: new,
             num_of_cities: num,
@@ -65,7 +65,7 @@ impl SimAnn {
         // self.update_sum();
     }
 
-    pub fn get_cost(&self, cities: &mut Vec<u16>) -> f64 {
+    pub fn get_cost(&self, cities: &mut Vec<usize>) -> f64 {
         self.add_dist(cities) / self.normalizer
     }
 
@@ -76,8 +76,12 @@ impl SimAnn {
     pub fn get_normalizer(&self) -> f64 {
         self.normalizer
     }
-    pub fn set_initial_solution(&mut self, arr: Vec<u16> ) {
+    pub fn set_initial_solution(&mut self, arr: Vec<usize>) {
         self.initial_solution = arr;
+    }
+
+    pub fn get_sum_of_ditances(&self) -> f64 {
+        self.sum_of_distances
     }
 
     fn normalizer(&mut self, reader: &Reader) {
@@ -105,7 +109,7 @@ impl SimAnn {
         self.all_cities = reader.read_cities();
     }
 
-    pub fn add_dist(&self, cities: &mut Vec<u16>) -> f64 {
+    pub fn add_dist(&self, cities: &mut Vec<usize>) -> f64 {
         let mut sum: f64 = 0.0;
         for i in 1..self.num_of_cities as usize {
             let mut row: usize = usize::try_from(cities[i - 1]).unwrap() - 1;
@@ -116,7 +120,7 @@ impl SimAnn {
         sum
     }
 
-    pub fn add_initial_distance(&mut self){
+    pub fn add_initial_distance(&mut self) {
         let mut sum: f64 = 0.0;
         for i in 1..self.num_of_cities as usize {
             let mut row: usize = usize::try_from(self.initial_solution[i - 1]).unwrap() - 1;
@@ -125,7 +129,6 @@ impl SimAnn {
             sum += dist;
         }
         self.sum_of_distances = sum;
-        
     }
 
     fn add_distances(&mut self) -> f64 {
@@ -191,7 +194,7 @@ impl SimAnn {
         num * PI / 180.0
     }
 
-    pub fn get_initial_solution(&mut self, cities : &mut Vec<u16>, seed : u64) -> Vec<u16>  {
+    pub fn get_initial_solution(&mut self, cities: &mut Vec<usize>, seed: u64) -> Vec<usize> {
         let mut r = StdRng::seed_from_u64(seed);
         for i in 0..self.num_of_cities as usize {
             let n: u16 = r.gen();
@@ -205,7 +208,7 @@ impl SimAnn {
         cities.to_vec()
     }
 
-    pub fn get_neighbor(&mut self, cities: &mut [u16]){
+    pub fn get_neighbor(&mut self, cities: &mut [usize]) {
         self.n1 = self.r.gen::<usize>() % self.num_of_cities;
         self.n2 = self.r.gen::<usize>() % self.num_of_cities;
         while self.n1 == self.n2 {
@@ -215,64 +218,36 @@ impl SimAnn {
 
         //dbg!(self.n1, self.n2);
         //let uni = Uniform::new(0, self.num_of_cities);
-       // self.swap(self.n1, self.n2);
+        // self.swap(self.n1, self.n2);
         let value = cities[self.n1 as usize];
-            cities[self.n1 as usize] = cities[self.n2 as usize];
-            cities[self.n2 as usize] = value;
+        cities[self.n1 as usize] = cities[self.n2 as usize];
+        cities[self.n2 as usize] = value;
 
-
-        
-       // cities.to_vec()
+        // cities.to_vec()
     }
 
-    fn swap(&mut self , i1 : usize, i2 : usize, cities : &mut [u16] )    {
+    pub fn undo(&self, cities: &mut [usize]) {
+        let value = cities[self.n1];
+        cities[self.n1] = cities[self.n2];
+        cities[self.n2] = value;
+    }
+
+    fn swap(&mut self, i1: usize, i2: usize, cities: &mut [u16]) {
         let value = self.initial_solution[i1];
         self.initial_solution[i1] = self.initial_solution[i2];
         self.initial_solution[i2] = value;
-        
     }
 
-    fn update_sum(&mut self) {
-        
+    pub fn update_sum(&mut self) {
+        let mut id: [usize; 6] = [1093; 6];
+        if self.n1 > self.n2 {
+            let value = self.n1;
+            self.n1 = self.n2;
+            self.n2 = value;
+        }
 
-        let id1: usize = usize::try_from(self.initial_solution[self.n1 - 1] - 1).unwrap();
-
-        let id2: usize = usize::try_from(self.initial_solution[self.n1] - 1).unwrap();
-        let id3: usize = usize::try_from(self.initial_solution[self.n1 + 1] - 1).unwrap();
-
-        let id4 = usize::try_from(self.initial_solution[self.n2 - 1] - 1).unwrap();
-        let id5 = usize::try_from(self.initial_solution[self.n2] - 1).unwrap();
-        let id6 = usize::try_from(self.initial_solution[self.n2 + 1] - 1).unwrap();
-
-        self.sum_of_distances += self.all_connections[id1][id2]
-            + self.all_connections[id2][id3]
-            + self.all_connections[id4][id5]
-            + self.all_connections[id5][id6];
-
-        self.sum_of_distances -= self.all_connections[id1][id5]
-            + self.all_connections[id5][id3]
-            + self.all_connections[id4][id2]
-            + self.all_connections[id2][id6];
-
-        // dbg!(id1, id2, id3, id4, id5, id6);
-        // dbg!(
-        //     self.all_connections[id1][id2],
-        //     self.all_connections[id2][id3],
-        //     self.all_connections[id4][id5],
-        //     self.all_connections[id5][id6]
-        // );
-        // dbg!(
-        //     self.all_connections[id1][id5],
-        //     self.all_connections[id5][id3],
-        //     self.all_connections[id4][id2],
-        //     self.all_connections[id2][id6]
-        // );
-
-        // dbg!("------------------------------------------");
-        // dbg!(self.sum_of_distances);
-        // dbg!(self.add_distances());
-
-        // let new : &Vec<u16>= &self.initial_solution;
-        // dbg!(self.add_dist(&new));
+        if self.n1 == 0 {
+            
+        }
     }
 }

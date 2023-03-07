@@ -91,18 +91,20 @@ mod tests {
             ));
         }
     }
-
-
+    
+    #[test]
     fn test_sum_of_distances() {
         let mut  case : Cases = Cases::new();
         let mut sa: SimAnn = SimAnn::new(case.l40.len().try_into().unwrap(), &case.l40);
-        
+        let mut updated_sum : f64 = 0.0;
+        let mut linear_sum : f64 = 0.0;
 
-        let mut initial_solution = sa.get_initial_solution();
+        let mut initial_solution = sa.get_initial_solution(&mut case.l40 , 7);
         sa.add_initial_distance();
             for i in 1..10{
                 
                 let mut cities = sa.get_neighbor(&mut case.l40[..]);
+                
             }
         
     }
