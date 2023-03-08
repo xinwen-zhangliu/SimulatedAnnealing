@@ -1,13 +1,13 @@
-use float_cmp::ApproxEq;
 use simulated_annealing::reader::Reader;
 use simulated_annealing::sa::SimAnn;
 use simulated_annealing::testCases::Cases;
 
-// running with command line output 
+// running with command line output
 // cargo test -- --no-capture
 
-#[crate_name = "tests"]
+//#[crate_name = "tests"]
 #[cfg(test)]
+#[allow(non_snake_case)]
 mod tests {
     use float_cmp::approx_eq;
     use simulated_annealing::city::City;
@@ -15,8 +15,6 @@ mod tests {
 
     use super::*;
 
-
-    
     #[test]
     /// Tests the function get_nat_distance in SimAnn against the distances in the database, byt getting a random selection of 25 pairs.
     fn test_nat_distance() {
@@ -44,15 +42,6 @@ mod tests {
                 all_cities[city1 as usize - 1],
                 all_cities[city2 as usize - 1],
             );
-
-            // println!(
-            //     "{} , {} : {:.15} = {:.15}",
-            //     city1,
-            //     city2,
-            //     dist * 1.0,
-            //     nat_dist
-            // );
-            //dbg!(city1, city2, dist * 1.0, nat_dist);
             assert!(approx_eq!(f64, dist, nat_dist, epsilon = 0.01, ulps = 2));
         }
     }
@@ -60,19 +49,19 @@ mod tests {
     #[test]
     /// Tests the cost function, maximum distance and normalizer of the cases with 40 and 150 cities, against predefined values.
     fn test_cost_function() {
-        let mut case: Cases = Cases::new();
+        let case: Cases = Cases::new();
         let mut results: Vec<f64> = Vec::new();
-        let reader: Reader = Reader::new("db/citiesDB.db");
         let mut sa40: SimAnn = SimAnn::new(case.l40.len().try_into().unwrap(), &case.l40);
         let mut sa150: SimAnn = SimAnn::new(case.l150.len().try_into().unwrap(), &case.l150);
 
-        let all_cities: Vec<City> = reader.read_cities();
         sa40.prepare();
         sa150.prepare();
-        results.push(sa40.get_cost(&mut case.l40));
+        sa40.add_initial_distance();
+        sa150.add_initial_distance();
+        results.push(sa40.get_cost());
         results.push(sa40.get_max_distance());
         results.push(sa40.get_normalizer());
-        results.push(sa150.get_cost(&mut case.l150));
+        results.push(sa150.get_cost());
         results.push(sa150.get_max_distance());
         results.push(sa150.get_normalizer());
 
@@ -105,18 +94,17 @@ mod tests {
         let mut sa: SimAnn = SimAnn::new(case.l40.len().try_into().unwrap(), &case.l40);
         sa.prepare();
 
-        
-        let mut updated_sum: f64 = 0.0;
-        let mut linear_sum: f64 = 0.0;
-
-        let mut initial_solution = sa.get_initial_solution(&mut case.l40, 8);
+        //let mut initial_solution = sa.get_initial_solution(&mut case.l40, 8);
         sa.add_initial_distance();
         for i in 1..10 {
             println!("{}", sa.get_sum_of_distances());
             sa.get_neighbor(&mut case.l40[..]);
-            updated_sum = sa.get_sum_of_distances();
-            linear_sum = sa.add_dist(&mut case.l40);
-            println!("{:?} \n {:.20} = {:.201}",case.l40, updated_sum, linear_sum);
+            let updated_sum = sa.get_sum_of_distances();
+            let linear_sum = sa.add_dist(&mut case.l40);
+            println!(
+                "{:?} \n {:.20} = {:.201}",
+                case.l40, updated_sum, linear_sum
+            );
             assert!(approx_eq!(
                 f64,
                 updated_sum,
@@ -124,9 +112,6 @@ mod tests {
                 epsilon = 0.0000001,
                 ulps = 10
             ));
-
-            
-
         }
     }
 }

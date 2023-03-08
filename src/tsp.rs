@@ -2,6 +2,7 @@ use rand::{rngs::StdRng, Rng, SeedableRng};
 
 use crate::sa::SimAnn;
 
+#[allow(non_snake_case)]
 trait TA {
     fn calcula_lote() -> (f64, f64);
     fn threshold_acceptance();
@@ -39,14 +40,12 @@ impl Solution {
         let mut r = 0.0;
         while counter < self.L {
             let last_cost = self.sa.get_cost() + self.temp;
-            //let mut s2 = self.cities.clone();
             self.sa.get_neighbor(&mut self.cities);
             let new_cost = self.sa.get_cost();
 
             if new_cost < last_cost {
-                //println!("E:{}", self.sa.get_cost(&mut s2));
                 println!("E:{:.20}", new_cost);
-                //self.cities = s2.clone();
+
                 counter += 1;
                 r += new_cost;
 
@@ -54,7 +53,7 @@ impl Solution {
                     self.best_path = self.cities.clone();
                     self.best_eval = new_cost;
                 }
-            }else {
+            } else {
                 self.sa.undo(&mut self.cities);
             }
         }
@@ -63,10 +62,9 @@ impl Solution {
 
     pub fn threshold_acceptance(&mut self) {
         self.sa.prepare();
-        self.cities = self.sa.get_initial_solution(&mut self.cities, 8);
+        self.cities = self.sa.get_initial_solution(&mut self.cities, 42);
         self.sa.add_initial_distance();
 
-        
         let mut batch_average: f64 = 0.0;
         while self.temp > self.epsilon {
             let mut q: f64 = f64::INFINITY;
@@ -83,17 +81,8 @@ impl Solution {
             println!("T:{}", self.temp);
         }
 
-        // --
         println!("{:.20}", self.best_eval);
-        // let best_sol = self
-        //     .best_path
-        //     .iter()
-        //     .map(|x| x.to_string())
-        //     .collect::<Vec<_>>()
-        //     .join(",");
-        // println!("[{:.20}]", best_sol);
-
-        println!("{:?}" , self.best_path);
+        println!("{:?}", self.best_path);
     }
 
     pub fn hill_descent(&mut self, seed: u64) {
@@ -113,10 +102,9 @@ impl Solution {
             let index = n % usize::try_from(self.cities.len()).unwrap();
             self.cities[i] = self.cities[index as usize];
             self.cities[index as usize] = value;
-            
+
             let new_cost = self.sa.get_cost();
             if previous_cost < new_cost {
-                dbg!("undoing");
                 self.sa.undo(&mut self.cities);
             } else {
                 dbg!("calculating batch", self.cities.to_vec(), new_cost);
