@@ -1,7 +1,10 @@
+use float_cmp::ApproxEq;
 use simulated_annealing::reader::Reader;
 use simulated_annealing::sa::SimAnn;
 use simulated_annealing::testCases::Cases;
-use float_cmp::ApproxEq;
+
+// running with command line output 
+// cargo test -- --no-capture
 
 #[crate_name = "tests"]
 #[cfg(test)]
@@ -12,6 +15,8 @@ mod tests {
 
     use super::*;
 
+
+    
     #[test]
     /// Tests the function get_nat_distance in SimAnn against the distances in the database, byt getting a random selection of 25 pairs.
     fn test_nat_distance() {
@@ -19,7 +24,10 @@ mod tests {
         let query = r#"SELECT * FROM connections ORDER BY RANDOM() LIMIT 25;"#;
         let reader: Reader = Reader::new("db/citiesDB.db");
         let all_cities: Vec<City> = reader.read_cities();
-        let sa: SimAnn = SimAnn::new(Cases::new().l40.len().try_into().unwrap(), &Cases::new().l40);
+        let sa: SimAnn = SimAnn::new(
+            Cases::new().l40.len().try_into().unwrap(),
+            &Cases::new().l40,
+        );
 
         let connection = Connection::open("db/citiesDB.db").unwrap();
         for row in connection
@@ -37,14 +45,14 @@ mod tests {
                 all_cities[city2 as usize - 1],
             );
 
-            println!(
-                "{} , {} : {:.15} = {:.15}",
-                city1,
-                city2,
-                dist * 1.0,
-                nat_dist
-            );
-            dbg!(city1, city2, dist * 1.0, nat_dist);
+            // println!(
+            //     "{} , {} : {:.15} = {:.15}",
+            //     city1,
+            //     city2,
+            //     dist * 1.0,
+            //     nat_dist
+            // );
+            //dbg!(city1, city2, dist * 1.0, nat_dist);
             assert!(approx_eq!(f64, dist, nat_dist, epsilon = 0.01, ulps = 2));
         }
     }
@@ -67,7 +75,6 @@ mod tests {
         results.push(sa150.get_cost(&mut case.l150));
         results.push(sa150.get_max_distance());
         results.push(sa150.get_normalizer());
-        
 
         //cost max_distance normalizer
         //first for the case with 40 cities then for the case with 150 cities
@@ -81,7 +88,7 @@ mod tests {
         ];
 
         for i in 0..6 {
-            println!("{} = {} ", cases[i], results[i]);
+            //println!("{} = {} ", cases[i], results[i]);
             assert!(approx_eq!(
                 f64,
                 cases[i],
@@ -91,21 +98,35 @@ mod tests {
             ));
         }
     }
-    
+
     #[test]
     fn test_sum_of_distances() {
-        let mut  case : Cases = Cases::new();
+        let mut case: Cases = Cases::new();
         let mut sa: SimAnn = SimAnn::new(case.l40.len().try_into().unwrap(), &case.l40);
-        let mut updated_sum : f64 = 0.0;
-        let mut linear_sum : f64 = 0.0;
+        sa.prepare();
 
-        let mut initial_solution = sa.get_initial_solution(&mut case.l40 , 7);
-        sa.add_initial_distance();
-            for i in 1..10{
-                
-                let mut cities = sa.get_neighbor(&mut case.l40[..]);
-                
-            }
         
+        let mut updated_sum: f64 = 0.0;
+        let mut linear_sum: f64 = 0.0;
+
+        let mut initial_solution = sa.get_initial_solution(&mut case.l40, 8);
+        sa.add_initial_distance();
+        for i in 1..10 {
+            println!("{}", sa.get_sum_of_distances());
+            sa.get_neighbor(&mut case.l40[..]);
+            updated_sum = sa.get_sum_of_distances();
+            linear_sum = sa.add_dist(&mut case.l40);
+            println!("{:?} \n {:.20} = {:.201}",case.l40, updated_sum, linear_sum);
+            assert!(approx_eq!(
+                f64,
+                updated_sum,
+                linear_sum,
+                epsilon = 0.0000001,
+                ulps = 10
+            ));
+
+            
+
+        }
     }
 }

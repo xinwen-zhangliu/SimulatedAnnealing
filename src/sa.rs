@@ -1,29 +1,23 @@
 use crate::city::City;
 use crate::reader::Reader;
-use crate::testCases::Cases;
 use libm::{atan2, cos, pow, sin, sqrt};
 use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
-use rand_distr::Uniform;
 use std::convert::TryFrom;
 use std::f64::consts::PI;
 
 //use simulated_annealing::sa::SimAnn::{to_rad};
-
 pub struct SimAnn {
     initial_solution: Vec<usize>,
     num_of_cities: usize,
     n1: usize,
     n2: usize,
-
     sum_of_distances: f64,
     normalizer: f64,
-
     all_cities: Vec<City>,
-    all_connections: Vec<Vec<f64>>, //vec![vec![f64;1092];1092],
+    all_connections: Vec<Vec<f64>>, 
     max_distance: f64,
     r: StdRng,
-    //uni : Uniform,
 }
 
 impl SimAnn {
@@ -46,7 +40,6 @@ impl SimAnn {
             ],
             all_connections: vec![vec![0.0f64; 1092]; 1092],
             max_distance: 0.0,
-            //uni : Uniform::new(0, num ),
             r: StdRng::seed_from_u64(7),
         }
     }
@@ -56,17 +49,18 @@ impl SimAnn {
 
         self.get_cities_connections(&reader);
         self.normalizer(&reader);
-        //self.get_initial_solution();
-        self.sum_of_distances = self.add_distances();
-        self.fill_distances();
 
-        // self.get_neighbor();
-        // self.add_distances();
-        // self.update_sum();
+        self.fill_distances();
+        self.sum_of_distances = self.add_distances();
+        //self.sum_of_distances = self.add_dist(&mut self.initial_solution.to_vec());
+
+        //dbg!(self.sum_of_distances);
     }
 
-    pub fn get_cost(&self, cities: &mut Vec<usize>) -> f64 {
-        self.add_dist(cities) / self.normalizer
+    pub fn get_cost(&self) -> f64 {
+        //self.add_dist(cities) / self.normalizer
+        //        dbg!(self.sum_of_distances, self.add_dist(cities),self.normalizer);
+        self.sum_of_distances / self.normalizer
     }
 
     pub fn get_max_distance(&self) -> f64 {
@@ -80,7 +74,7 @@ impl SimAnn {
         self.initial_solution = arr;
     }
 
-    pub fn get_sum_of_ditances(&self) -> f64 {
+    pub fn get_sum_of_distances(&self) -> f64 {
         self.sum_of_distances
     }
 
@@ -109,7 +103,7 @@ impl SimAnn {
         self.all_cities = reader.read_cities();
     }
 
-    pub fn add_dist(&self, cities: &mut Vec<usize>) -> f64 {
+    pub fn add_dist(&mut self, cities: &mut Vec<usize>) -> f64 {
         let mut sum: f64 = 0.0;
         for i in 1..self.num_of_cities as usize {
             let mut row: usize = usize::try_from(cities[i - 1]).unwrap() - 1;
@@ -117,6 +111,7 @@ impl SimAnn {
             let dist = self.all_connections[row][column];
             sum += dist;
         }
+        self.sum_of_distances = sum;
         sum
     }
 
@@ -131,7 +126,7 @@ impl SimAnn {
         self.sum_of_distances = sum;
     }
 
-    fn add_distances(&mut self) -> f64 {
+    pub fn add_distances(&mut self) -> f64 {
         let mut sum: f64 = 0.0;
         for i in 1..self.num_of_cities as usize {
             let mut row: usize = usize::try_from(self.initial_solution[i - 1]).unwrap() - 1;
@@ -157,7 +152,6 @@ impl SimAnn {
     }
 
     pub fn fill_distances(&mut self) {
-        //dbg!(self.all_cities.len());
         for i in 0..1092 {
             for j in (i + 1)..1092 {
                 if self.all_connections[i][j] == 0.0 || self.all_connections[j][i] == 0.0 {
@@ -205,9 +199,11 @@ impl SimAnn {
                 cities[index as usize] = value;
             }
         }
+        self.initial_solution = cities.to_vec();
         cities.to_vec()
     }
 
+    
     pub fn get_neighbor(&mut self, cities: &mut [usize]) {
         self.n1 = self.r.gen::<usize>() % self.num_of_cities;
         self.n2 = self.r.gen::<usize>() % self.num_of_cities;
@@ -216,38 +212,76 @@ impl SimAnn {
             self.n2 = self.r.gen::<usize>() % self.num_of_cities;
         }
 
-        //dbg!(self.n1, self.n2);
-        //let uni = Uniform::new(0, self.num_of_cities);
-        // self.swap(self.n1, self.n2);
+        //get the original distance between neighbors before swapping
+        let previous_distances: f64 =  self.get_sum(cities);
+
+        //swapping
         let value = cities[self.n1 as usize];
         cities[self.n1 as usize] = cities[self.n2 as usize];
         cities[self.n2 as usize] = value;
 
-        // cities.to_vec()
+        //getting the new distances after swapping
+        let new_distances: f64 =  self.get_sum(cities);
+
+        //adding and substracitng the distances to set the new updated sum of distances
+        self.sum_of_distances = self.sum_of_distances - previous_distances + new_distances;
     }
 
-    pub fn undo(&self, cities: &mut [usize]) {
-        let value = cities[self.n1];
-        cities[self.n1] = cities[self.n2];
-        cities[self.n2] = value;
-    }
-
-    fn swap(&mut self, i1: usize, i2: usize, cities: &mut [u16]) {
-        let value = self.initial_solution[i1];
-        self.initial_solution[i1] = self.initial_solution[i2];
-        self.initial_solution[i2] = value;
-    }
-
-    pub fn update_sum(&mut self) {
+    fn get_sum(&mut self, cities: &mut [usize]) -> f64 {
+        let mut sum: f64 = 0.0;
         let mut id: [usize; 6] = [1093; 6];
-        if self.n1 > self.n2 {
+        if self.n2 < self.n1 {
             let value = self.n1;
             self.n1 = self.n2;
             self.n2 = value;
         }
 
-        if self.n1 == 0 {
-            
+        if (self.n1 > 0 && self.n1 < (cities.len() - 1)) {
+            id[0] = cities[self.n1 - 1] - 1;
+            id[1] = cities[self.n1] - 1;
+            id[2] = cities[self.n1 + 1] - 1;
         }
+
+        if (self.n2 > 0 && self.n2 < (cities.len() - 1)) {
+            id[3] = cities[self.n2 - 1] - 1;
+            id[4] = cities[self.n2] - 1;
+            id[5] = cities[self.n2 + 1] - 1;
+        }
+
+        if self.n1 == 0 {
+            id[1] = cities[self.n1] - 1;
+            id[2] = cities[self.n1 + 1] - 1;
+        }
+
+        if self.n1 + 1 == self.n2 {
+            id[2] = 1093;
+        }
+
+        if self.n2 == cities.len() - 1 {
+            id[3] = cities[self.n2 - 1] - 1;
+            id[4] = cities[self.n2] - 1;
+        }
+
+        for i in 0..5 {
+            if id[i] == 1093 || id[i + 1] == 1093 {
+                continue;
+            } else if i == 2 {
+                continue;
+            }
+            
+            sum = sum.mul_add( 1.0, self.all_connections[id[i]][id[i + 1]]);
+        }
+        sum
+    }
+
+    pub fn undo(&mut self, cities: &mut [usize]) {
+        let previous = self.get_sum(cities);
+        let value = cities[self.n1];
+        cities[self.n1] = cities[self.n2];
+        cities[self.n2] = value;
+
+        let next = self.get_sum(cities);
+
+        self.sum_of_distances = self.sum_of_distances - previous + next;
     }
 }
