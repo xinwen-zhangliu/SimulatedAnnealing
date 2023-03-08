@@ -1,4 +1,4 @@
-use crate::city::City;
+use crate::City;
 use crate::reader::Reader;
 use libm::{atan2, cos, pow, sin, sqrt};
 use rand::rngs::StdRng;
@@ -41,7 +41,7 @@ impl SimAnn {
             ],
             all_connections: vec![vec![0.0f64; 1092]; 1092],
             max_distance: 0.0,
-            r: StdRng::seed_from_u64(7),
+            r: StdRng::seed_from_u64(1234),
         }
     }
 
@@ -110,15 +110,13 @@ impl SimAnn {
     pub fn add_initial_distance(&mut self) {
         let mut sum: f64 = 0.0;
         for i in 1..self.num_of_cities as usize {
-            let row: usize = usize::try_from(self.initial_solution[i - 1]).unwrap() - 1;
-            let column: usize = usize::try_from(self.initial_solution[i]).unwrap() - 1;
-            sum += self.all_connections[row][column];
+            sum += self.all_connections[self.initial_solution[i - 1]-1][self.initial_solution[i]-1];
         }
         self.sum_of_distances = sum;
     }
 
     
-
+    ///Fills all the unknown distances between two cities and saves then in self.all_connections
     pub fn fill_distances(&mut self) {
         for i in 0..1092 {
             for j in (i + 1)..1092 {
@@ -132,10 +130,23 @@ impl SimAnn {
         }
     }
 
+    /// Calculates the natural distance between two cities
+    ///
+    /// # Arguments
+    ///
+    /// * `city1` - A City instance
+    /// * `city21 - A City instance
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// 
+    /// ```
     pub fn get_unknown_distance(&mut self, city1: City, city2: City) -> f64 {
         self.get_nat_distance(city1, city2) * self.max_distance
     }
 
+    ///Calculates the natural distance between two cities
     pub fn get_nat_distance(&self, city1: City, city2: City) -> f64 {
         let A = pow(
             sin((Self::to_rad(city2.lat) - Self::to_rad(city1.lat)) / 2.0),
@@ -152,10 +163,12 @@ impl SimAnn {
         R * C
     }
 
+    ///Converts degrees to radians
     fn to_rad(num: f64) -> f64 {
         num * PI / 180.0
     }
 
+    ///Modifies the passed vector and randomly generates from a seed an initial solution
     pub fn get_initial_solution(&mut self, cities: &mut Vec<usize>, seed: u64) -> Vec<usize> {
         let mut r = StdRng::seed_from_u64(seed);
         for i in 0..self.num_of_cities as usize {
@@ -171,6 +184,7 @@ impl SimAnn {
         cities.to_vec()
     }
 
+    ///Modifies the passed slice and swaps two cities creating a neighboring solution
     pub fn get_neighbor(&mut self, cities: &mut [usize]) {
         self.n1 = self.r.gen::<usize>() % self.num_of_cities;
         self.n2 = self.r.gen::<usize>() % self.num_of_cities;
@@ -194,6 +208,7 @@ impl SimAnn {
         self.sum_of_distances = self.sum_of_distances - previous_distances + new_distances;
     }
 
+    ///Returns the sum of distances between two swapped cities 
     fn get_sum(&mut self, cities: &mut [usize]) -> f64 {
         let mut sum: f64 = 0.0;
         let mut id: [usize; 6] = [1093; 6];
@@ -240,15 +255,16 @@ impl SimAnn {
         }
         sum
     }
-
+    
+    ///
+    ///Function that returns a vector of city ids to its previous state
+    ///
     pub fn undo(&mut self, cities: &mut [usize]) {
         let previous = self.get_sum(cities);
         let value = cities[self.n1];
         cities[self.n1] = cities[self.n2];
         cities[self.n2] = value;
-
         let next = self.get_sum(cities);
-
         self.sum_of_distances = self.sum_of_distances - previous + next;
     }
 }

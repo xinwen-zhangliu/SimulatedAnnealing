@@ -1,8 +1,4 @@
-//use rusqlite::NO_PARAMS; deprecated
-//use std::collections::HashMap;
-//use sqlite::State;
-use sqlite::{Connection, Result};
-//use std::convert::TryFrom;
+use sqlite::Result;
 use std::env;
 
 use simulated_annealing::sa::SimAnn;
@@ -27,13 +23,14 @@ fn main() -> Result<()> {
 
     extern crate num_cpus;
     let num = num_cpus::get();
+    dbg!(num);
 
     let cases: Cases = Cases::new();
-    let cities: Vec<usize> = cases.l40;
+    let cities: Vec<usize> = cases.l150;
     let mut sa: SimAnn = SimAnn::new(cities.len().try_into().unwrap(), &cities);
     sa.prepare();
 
-    let mut sol: Solution = Solution::new(0.002, 8.0, 0.95, &cities, 2000);
+    let mut sol: Solution = Solution::new(0.002, 489943.0, 0.95, &cities, 2000);
     sol.threshold_acceptance();
 
     Ok(())

@@ -34,6 +34,7 @@ impl Solution {
         }
     }
 
+    
     fn calculate_batch(&mut self) -> f64 {
         let mut counter = 0;
 
@@ -62,7 +63,7 @@ impl Solution {
 
     pub fn threshold_acceptance(&mut self) {
         self.sa.prepare();
-        self.cities = self.sa.get_initial_solution(&mut self.cities, 42);
+        self.cities = self.sa.get_initial_solution(&mut self.cities, 93784);
         self.sa.add_initial_distance();
 
         let mut batch_average: f64 = 0.0;
@@ -74,10 +75,10 @@ impl Solution {
             }
 
             self.temp = self.phi * self.temp;
-            let epsilon = q - batch_average;
-            if epsilon.abs() < 100.0 && batch_average > 1000.0 {
-                self.temp *= 10000.0;
-            }
+            // let epsilon = q - batch_average;
+            // if epsilon.abs() < 100.0 && batch_average > 1000.0 {
+            //     self.temp *= 1000.0;
+            // }
             println!("T:{}", self.temp);
         }
 
