@@ -25,12 +25,24 @@ fn main() -> Result<()> {
     let num = num_cpus::get();
     dbg!(num);
 
+    
+
+    
     let cases: Cases = Cases::new();
-    let cities: Vec<usize> = cases.l150;
+    let cities: Vec<usize> = cases.l40;
     let mut sa: SimAnn = SimAnn::new(cities.len().try_into().unwrap(), &cities);
     sa.prepare();
 
-    let mut sol: Solution = Solution::new(0.002, 489943.0, 0.95, &cities, 2000);
+    let dist =sa.add_dist(&mut vec![54,483,186,980,327,164,984,491,492,489,4,817,
+                  978,6,5,165,3,333,981,820,332,982,816,7,653,
+                  654,490,2,656,657,168,1,163,172,496,815,329,
+                          493,979,331]);
+    
+    let norm = sa.get_normalizer();
+
+    dbg!(dist/norm);
+    let mut sol: Solution = Solution::new(0.002, 788999.0, 0.95, &cities, 2000);
+    
     sol.threshold_acceptance();
 
     Ok(())

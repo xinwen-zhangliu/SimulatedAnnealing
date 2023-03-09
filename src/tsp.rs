@@ -3,10 +3,6 @@ use rand::{rngs::StdRng, Rng, SeedableRng};
 use crate::sa::SimAnn;
 
 #[allow(non_snake_case)]
-trait TA {
-    fn calcula_lote() -> (f64, f64);
-    fn threshold_acceptance();
-}
 
 pub struct Solution {
     cities: Vec<usize>,
@@ -34,7 +30,6 @@ impl Solution {
         }
     }
 
-    
     fn calculate_batch(&mut self) -> f64 {
         let mut counter = 0;
 
@@ -46,7 +41,6 @@ impl Solution {
 
             if new_cost < last_cost {
                 println!("E:{:.20}", new_cost);
-
                 counter += 1;
                 r += new_cost;
 
@@ -61,9 +55,9 @@ impl Solution {
         r / f64::try_from(self.L).unwrap()
     }
 
-    pub fn threshold_acceptance(&mut self) {
+    pub fn threshold_acceptance(&mut self) -> (f64, Vec<usize>) {
         self.sa.prepare();
-        self.cities = self.sa.get_initial_solution(&mut self.cities, 93784);
+        self.cities = self.sa.get_initial_solution(&mut self.cities, 42);
         self.sa.add_initial_distance();
 
         let mut batch_average: f64 = 0.0;
@@ -75,15 +69,12 @@ impl Solution {
             }
 
             self.temp = self.phi * self.temp;
-            // let epsilon = q - batch_average;
-            // if epsilon.abs() < 100.0 && batch_average > 1000.0 {
-            //     self.temp *= 1000.0;
-            // }
             println!("T:{}", self.temp);
         }
 
-        println!("{:.20}", self.best_eval);
-        println!("{:?}", self.best_path);
+        println!("S:{:.20}", self.best_eval);
+        println!("P:{:?}", self.best_path);
+        (self.best_eval, self.best_path.clone())
     }
 
     pub fn hill_descent(&mut self, seed: u64) {
@@ -98,7 +89,6 @@ impl Solution {
             }
 
             let previous_cost = self.sa.get_cost();
-
             let value = self.cities[i];
             let index = n % usize::try_from(self.cities.len()).unwrap();
             self.cities[i] = self.cities[index as usize];
@@ -108,7 +98,6 @@ impl Solution {
             if previous_cost < new_cost {
                 self.sa.undo(&mut self.cities);
             } else {
-                dbg!("calculating batch", self.cities.to_vec(), new_cost);
                 // while batch_average < q {
                 //     q = batch_average;
                 //     batch_average = self.calculate_batch();
@@ -118,13 +107,6 @@ impl Solution {
 
         // --
         println!("{}", self.best_eval);
-        // let best_sol = self
-        //     .best_path
-        //     .iter()
-        //     .map(|x| x.to_string())
-        //     .collect::<Vec<_>>()
-        //     .join(",");
-        // println!("[{}]", best_sol);
         println!("{:?}", self.best_path);
     }
 }

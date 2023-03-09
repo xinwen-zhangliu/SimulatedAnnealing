@@ -41,7 +41,7 @@ impl SimAnn {
             ],
             all_connections: vec![vec![0.0f64; 1092]; 1092],
             max_distance: 0.0,
-            r: StdRng::seed_from_u64(1234),
+            r: StdRng::seed_from_u64(7),
         }
     }
 
@@ -103,6 +103,7 @@ impl SimAnn {
             let row: usize = usize::try_from(cities[i - 1]).unwrap() - 1;
             let column: usize = usize::try_from(cities[i]).unwrap() - 1;
             sum += self.all_connections[row][column];
+            println!("add_dist: {:.15}]", self.all_connections[row][column]);
         }
         sum
     }
@@ -192,6 +193,7 @@ impl SimAnn {
             self.n1 = self.r.gen::<usize>() % self.num_of_cities;
             self.n2 = self.r.gen::<usize>() % self.num_of_cities;
         }
+        dbg!(self.n1, self.n2);
 
         //get the original distance between neighbors before swapping
         let previous_distances: f64 = self.get_sum(cities);

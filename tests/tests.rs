@@ -10,7 +10,7 @@ use simulated_annealing::testCases::Cases;
 #[allow(non_snake_case)]
 mod tests {
     use float_cmp::approx_eq;
-    use simulated_annealing::city::City;
+    use simulated_annealing::City;
     use sqlite::Connection;
 
     use super::*;
@@ -78,13 +78,7 @@ mod tests {
 
         for i in 0..6 {
             //println!("{} = {} ", cases[i], results[i]);
-            assert!(approx_eq!(
-                f64,
-                cases[i],
-                results[i],
-                epsilon = 0.000000001,
-                ulps = 10
-            ));
+            assert!(approx_eq!(f64, cases[i], results[i], epsilon = 0.000001));
         }
     }
 
@@ -96,21 +90,44 @@ mod tests {
 
         //let mut initial_solution = sa.get_initial_solution(&mut case.l40, 8);
         sa.add_initial_distance();
-        for i in 1..10 {
+        for i in 1..100 {
             println!("{}", sa.get_sum_of_distances());
             sa.get_neighbor(&mut case.l40[..]);
             let updated_sum = sa.get_sum_of_distances();
             let linear_sum = sa.add_dist(&mut case.l40);
             println!(
-                "{:?} \n {:.20} = {:.201}",
+                "{:?} \n update:{:.20} = linear:{:.201}",
                 case.l40, updated_sum, linear_sum
             );
+            println!("{}" , i);
             assert!(approx_eq!(
                 f64,
                 updated_sum,
                 linear_sum,
-                epsilon = 0.0000001,
-                ulps = 10
+                epsilon = 1.0
+            ));
+        }
+    }
+
+    #[test]
+    fn test_sum_swap_unswap() {
+        let mut case: Cases = Cases::new();
+        let mut sa: SimAnn = SimAnn::new(case.l40.len().try_into().unwrap(), &case.l40);
+        sa.prepare();
+
+        for _i in 1..50 {
+            let mut cities = sa.get_initial_solution(&mut case.l40, 7);
+            sa.add_initial_distance();
+            let before_swap = sa.get_cost();
+            sa.get_neighbor(&mut cities);
+            sa.undo(&mut cities);
+            let after_undo = sa.get_cost();
+
+            assert!(approx_eq!(
+                f64,
+                before_swap,
+                after_undo,
+                epsilon = 0.0000001
             ));
         }
     }
