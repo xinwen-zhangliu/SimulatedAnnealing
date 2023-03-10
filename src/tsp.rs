@@ -13,23 +13,43 @@ pub struct Solution {
     L: u32,
     best_path: Vec<usize>,
     best_eval: f64,
+    initial_sol_seed : u64,
+    neighbor_seed : u64
 }
 
 impl Solution {
-    pub fn new(epsilon: f64, initial_temp: f64, phi: f64, cities: &Vec<usize>, L: u32) -> Self {
+    pub fn new(epsilon: f64, initial_temp: f64, phi: f64, cities: &Vec<usize>, L: u32, initial_sol_seed : u64, neighbor_seed : u64 ) -> Self {
         let len = cities.len();
         Self {
             cities: cities.clone(),
             epsilon,
             phi,
             temp: initial_temp,
-            sa: SimAnn::new(len, &cities),
+            sa: SimAnn::new(len, &cities, neighbor_seed),
             L,
             best_path: cities.clone(),
             best_eval: f64::INFINITY,
+            neighbor_seed,
+            initial_sol_seed
         }
     }
 
+    pub fn get_best_eval(&self) -> f64 {
+        self.best_eval
+    }
+
+    pub fn get_best_path(&self) -> Vec<usize> {
+        self.best_path.clone()
+    }
+
+    pub fn get_neighbor_seed(&self) -> u64 {
+        self.neighbor_seed
+    }
+
+    pub fn get_initial_sol_seed(&self) -> u64 {
+        self.initial_sol_seed
+    }
+    
     fn calculate_batch(&mut self) -> f64 {
         let mut counter = 0;
 
@@ -40,7 +60,7 @@ impl Solution {
             let new_cost = self.sa.get_cost();
 
             if new_cost < last_cost {
-                println!("E:{:.20}", new_cost);
+                //println!("E:{:.20}", new_cost);
                 counter += 1;
                 r += new_cost;
 
@@ -55,9 +75,9 @@ impl Solution {
         r / f64::try_from(self.L).unwrap()
     }
 
-    pub fn threshold_acceptance(&mut self) -> (f64, Vec<usize>) {
+    pub fn threshold_acceptance(&mut self) -> (f64, Vec<usize>, u64, u64) {
         self.sa.prepare();
-        self.cities = self.sa.get_initial_solution(&mut self.cities, 42);
+        self.cities = self.sa.get_initial_solution(&mut self.cities, self.initial_sol_seed);
         self.sa.add_initial_distance();
 
         let mut batch_average: f64 = 0.0;
@@ -74,7 +94,7 @@ impl Solution {
 
         println!("S:{:.20}", self.best_eval);
         println!("P:{:?}", self.best_path);
-        (self.best_eval, self.best_path.clone())
+        (self.best_eval, self.best_path.clone(), self.neighbor_seed, self.initial_sol_seed)
     }
 
     pub fn hill_descent(&mut self, seed: u64) {

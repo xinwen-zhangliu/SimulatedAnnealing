@@ -22,7 +22,7 @@ pub struct SimAnn {
 }
 
 impl SimAnn {
-    pub fn new(num: usize, cities: &Vec<usize>) -> Self {
+    pub fn new(num: usize, cities: &Vec<usize>, seed : u64) -> Self {
         let new: Vec<usize> = cities.to_vec();
         Self {
             initial_solution: new,
@@ -193,8 +193,7 @@ impl SimAnn {
             self.n1 = self.r.gen::<usize>() % self.num_of_cities;
             self.n2 = self.r.gen::<usize>() % self.num_of_cities;
         }
-        dbg!(self.n1, self.n2);
-
+        
         //get the original distance between neighbors before swapping
         let previous_distances: f64 = self.get_sum(cities);
 
