@@ -60,7 +60,7 @@ impl Solution {
             let new_cost = self.sa.get_cost();
 
             if new_cost < last_cost {
-                //println!("E:{:.20}", new_cost);
+                println!("E:{:.20}", new_cost);
                 counter += 1;
                 r += new_cost;
 
@@ -94,6 +94,8 @@ impl Solution {
 
         println!("S:{:.20}", self.best_eval);
         println!("P:{:?}", self.best_path);
+        println!("N:{}", self.neighbor_seed);
+        println!("I:{}", self.initial_sol_seed);
         (self.best_eval, self.best_path.clone(), self.neighbor_seed, self.initial_sol_seed)
     }
 

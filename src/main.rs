@@ -40,8 +40,22 @@ fn main() -> Result<()> {
     
     // let norm = sa.get_normalizer();
 
-    let mut thread = TSI::new(40);
-    thread.spawn_threads();
+    // let mut thread = TSI::new(40);
+    // thread.spawn_threads(40);
 
+    let mut sol: Solution = Solution::new(
+                    0.002,
+                    800000.0,
+                    0.95,
+                    &Cases::new().l40,
+                    2000,
+                    13603085585784548072,
+                    11058656509428391188,
+                );
+//11058656509428391188, 13603085585784548072
+
+     
+
+        sol.threshold_acceptance();
     Ok(())
 }
