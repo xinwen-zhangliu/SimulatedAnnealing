@@ -13,12 +13,20 @@ pub struct Solution {
     L: u32,
     best_path: Vec<usize>,
     best_eval: f64,
-    initial_sol_seed : u64,
-    neighbor_seed : u64
+    initial_sol_seed: u64,
+    neighbor_seed: u64,
 }
 
 impl Solution {
-    pub fn new(epsilon: f64, initial_temp: f64, phi: f64, cities: &Vec<usize>, L: u32, initial_sol_seed : u64, neighbor_seed : u64 ) -> Self {
+    pub fn new(
+        epsilon: f64,
+        initial_temp: f64,
+        phi: f64,
+        cities: &Vec<usize>,
+        L: u32,
+        initial_sol_seed: u64,
+        neighbor_seed: u64,
+    ) -> Self {
         let len = cities.len();
         Self {
             cities: cities.clone(),
@@ -30,7 +38,7 @@ impl Solution {
             best_path: cities.clone(),
             best_eval: f64::INFINITY,
             neighbor_seed,
-            initial_sol_seed
+            initial_sol_seed,
         }
     }
 
@@ -49,7 +57,7 @@ impl Solution {
     pub fn get_initial_sol_seed(&self) -> u64 {
         self.initial_sol_seed
     }
-    
+
     fn calculate_batch(&mut self) -> f64 {
         let mut counter = 0;
 
@@ -64,7 +72,7 @@ impl Solution {
                 counter += 1;
                 r += new_cost;
 
-                if new_cost <= self.best_eval {
+                if new_cost <= self.best_eval && new_cost < 1.0 {
                     self.best_path = self.cities.clone();
                     self.best_eval = new_cost;
                 }
@@ -77,7 +85,9 @@ impl Solution {
 
     pub fn threshold_acceptance(&mut self) -> (f64, Vec<usize>, u64, u64) {
         self.sa.prepare();
-        self.cities = self.sa.get_initial_solution(&mut self.cities, self.initial_sol_seed);
+        self.cities = self
+            .sa
+            .get_initial_solution(&mut self.cities, self.initial_sol_seed);
         self.sa.add_initial_distance();
 
         let mut batch_average: f64 = 0.0;
@@ -96,39 +106,25 @@ impl Solution {
         println!("P:{:?}", self.best_path);
         println!("N:{}", self.neighbor_seed);
         println!("I:{}", self.initial_sol_seed);
-        (self.best_eval, self.best_path.clone(), self.neighbor_seed, self.initial_sol_seed)
+        (
+            self.best_eval,
+            self.best_path.clone(),
+            self.neighbor_seed,
+            self.initial_sol_seed,
+        )
     }
 
-    pub fn hill_descent(&mut self, seed: u64) {
-        self.sa.prepare();
-        let mut r = StdRng::seed_from_u64(seed);
-        let mut batch_average: f64 = 0.0;
-        for i in 0..self.cities.len() as usize {
-            let mut n: usize = r.gen();
-            let mut q: f64 = f64::INFINITY;
-            while n == i {
-                n = r.gen();
-            }
-
-            let previous_cost = self.sa.get_cost();
-            let value = self.cities[i];
-            let index = n % usize::try_from(self.cities.len()).unwrap();
-            self.cities[i] = self.cities[index as usize];
-            self.cities[index as usize] = value;
-
-            let new_cost = self.sa.get_cost();
-            if previous_cost < new_cost {
-                self.sa.undo(&mut self.cities);
-            } else {
-                // while batch_average < q {
-                //     q = batch_average;
-                //     batch_average = self.calculate_batch();
-                // }
+    pub fn sweep(&mut self) {
+        let norm = self.sa.get_normalizer();
+        for i in 0..self.best_path.len() {
+            let value = self.best_path[i];
+            for j in 1..self.best_path.len(){
+                self.best_path[i] = self.best_path[i];
+                
+                
             }
         }
-
-        // --
-        println!("{}", self.best_eval);
-        println!("{:?}", self.best_path);
     }
+
+    
 }

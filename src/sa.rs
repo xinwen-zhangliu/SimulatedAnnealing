@@ -251,7 +251,6 @@ impl SimAnn {
             } else if i == 2 {
                 continue;
             }
-
             sum = sum.mul_add(1.0, self.all_connections[id[i]][id[i + 1]]);
         }
         sum

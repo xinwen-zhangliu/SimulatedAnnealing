@@ -36,10 +36,10 @@ impl TSI {
                 let mut r = rand::thread_rng();
                 let mut sol: Solution = Solution::new(
                     0.002,
-                    800000.0,
+                    2000000.0,
                     0.95,
-                    &Cases::new().l40,
-                    2000,
+                    &Cases::new().l150,
+                    5000,
                     r.gen(),
                     r.gen(),
                 );
@@ -72,76 +72,11 @@ impl TSI {
         }
 
         println!("All joined.");
-        println!("{:?}", tuples);
+        for t in tuples {
+            println!("{:?}", t);
+        }
+        //println!("{:?}", tuples);
 
-        // let (tx, rx) = mpsc::channel();
-        // let (sol_tx, sol_rx) = mpsc::channel();
 
-        // for _i in 1..self.num_of_threads {
-        //     let tx = tx.clone();
-        //     let sol_tx = sol_tx.clone();
-        //     let handle = thread::spawn(move || {
-        //         dbg!("thread spawned");
-        //         for _i in 1..3 {}
-        //         let mut r = rand::thread_rng();
-        //         let mut sol: Solution = Solution::new(
-        //             0.002,
-        //             800000.0,
-        //             0.95,
-        //             &Cases::new().l40,
-        //             2000,
-        //             r.gen(),
-        //             r.gen(),
-        //         );
-
-        //         tx.send(sol.threshold_acceptance()).unwrap_or_else(|error| {
-        //             panic!("Error sending solution through channel");
-        //         });
-        //         sol_tx.send(sol).unwrap();
-        //     });
-
-        //     //.join()
-        //     //.unwrap();
-        // }
-        // handle.join().unwrap();
-
-        // let mut tuples = vec![(0.0f64, vec![0usize; num], 0u64, 0u64); 36];
-        // let mut counter = 0;
-
-        // while counter < 36 {
-        //     for tuple in &rx {
-        //         println!("{:?}", tuple);
-        //         counter += 1;
-        //         tuples.push(tuple)
-        //     }
-        // }
-
-        // println!("{:?}", tuples);
-        // dbg!(counter);
-        // // for received in sol_rx {
-        // //     //            if received.is_some(){
-        // //     if received.get_best_eval() < self.best_eval_overall {
-        // //         self.best_eval_overall = received.get_best_eval();
-        // //         self.best_solution = Some(received);
-        // //         // self.best_solution.unwrap_or_else(|| {
-        // //         //     if self.best_solution.kind() != Some(Solution) {
-
-        // //         //     }
-        // //         // });
-        // //     }
-        // //     //            }
-        // // }
-
-        // let neighbor_seed = self.best_solution.as_ref().unwrap().get_neighbor_seed();
-        // let initial_sol_seed = self.best_solution.as_ref().unwrap().get_initial_sol_seed();
-        // println!("best_eval_overall  {:.15}", self.best_eval_overall);
-        // println!(
-        //     "path:{:?} ",
-        //     self.best_solution.as_ref().unwrap().get_best_path()
-        // );
-        // println!(
-        //     "neighbor seed : {}, initial_sol_seed : {}",
-        //     neighbor_seed, initial_sol_seed
-        // )
     }
 }
