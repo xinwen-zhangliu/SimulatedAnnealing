@@ -1,7 +1,7 @@
 pub mod reader;
 pub mod testCases;
+pub mod path;
 pub mod sa;
-pub mod tsp;
 pub mod threadspawninator;
 
 

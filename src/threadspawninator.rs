@@ -3,19 +3,19 @@ use std::thread;
 use std::time::Duration;
 use std::{sync::mpsc, thread::JoinHandle};
 
-use crate::{testCases::Cases, tsp::Solution};
+use crate::{testCases::Cases, sa::SimAnn};
 
 pub struct TSI {
     num_of_threads: usize,
     //best_path_overall: Vec<usize>,
     best_eval_overall: f64,
-    best_solution: Option<Solution>,
+    best_solution: Option<SimAnn>,
 }
 
-type Type = Solution;
+type Type = SimAnn;
 
 impl TSI {
-    pub fn new(num: usize) -> Self {
+    pub fn new() -> Self {
         Self {
             num_of_threads: num_cpus::get(),
             //best_path_overall: vec![0.0f64; num],
@@ -34,19 +34,33 @@ impl TSI {
             let tx = tx.clone();
             let join_handle = thread::spawn(move || {
                 let mut r = rand::thread_rng();
-                let mut sol: Solution = Solution::new(
+                let mut sol: SimAnn = SimAnn::new(
                     0.002,
-                    2000000.0,
+                    800000.0,
                     0.95,
-                    &Cases::new().l150,
-                    5000,
+                    &Cases::new().l40,
+                    2000,
                     r.gen(),
                     r.gen(),
                 );
+                let wanted_solution = 0.27;
+                let mut tuple = sol.threshold_acceptance();
+                while tuple.0 > wanted_solution {
+                    let mut sol: SimAnn = SimAnn::new(
+                        0.002,
+                        800000.0,
+                        0.95,
+                        &Cases::new().l40,
+                        2000,
+                        r.gen(),
+                        r.gen(),
+                    );
+                    tuple = sol.threshold_acceptance();
+                }
                 // Signal that we are finished.
                 // This will wake up the main thread.
                 send_finished_thread
-                    .send(sol.threshold_acceptance())
+                    .send(tuple)
                     .unwrap();
                 tx.send(i).unwrap();
             });
@@ -54,7 +68,7 @@ impl TSI {
         }
 
         let counter = 0;
-        let mut tuples = vec![(0.0f64, vec![0usize; num], 0u64, 0u64); 36];
+        let mut tuples = vec![(0.0f64, vec![0usize; num], 0u64, 0u64); 12];
         loop {
             // Check if all threads are finished
             let num_left = v.iter().filter(|th| th.is_some()).count();
@@ -76,7 +90,5 @@ impl TSI {
             println!("{:?}", t);
         }
         //println!("{:?}", tuples);
-
-
     }
 }

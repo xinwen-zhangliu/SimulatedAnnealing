@@ -1,270 +1,131 @@
-use crate::City;
-use crate::reader::Reader;
-use libm::{atan2, cos, pow, sin, sqrt};
-use rand::rngs::StdRng;
-use rand::{Rng, SeedableRng};
-use std::convert::TryFrom;
-use std::f64::consts::PI;
+use rand::{rngs::StdRng, Rng, SeedableRng};
+
+use crate::path::Path;
+
 #[allow(non_snake_case)]
 
-
 pub struct SimAnn {
-    initial_solution: Vec<usize>,
-    num_of_cities: usize,
-    n1: usize,
-    n2: usize,
-    sum_of_distances: f64,
-    normalizer: f64,
-    all_cities: Vec<City>,
-    all_connections: Vec<Vec<f64>>,
-    max_distance: f64,
-    r: StdRng,
+    cities: Vec<usize>,
+    epsilon: f64,
+    phi: f64,
+    temp: f64,
+    path: Path,
+    L: u32,
+    best_path: Vec<usize>,
+    best_eval: f64,
+    initial_sol_seed: u64,
+    neighbor_seed: u64,
 }
 
 impl SimAnn {
-    pub fn new(num: usize, cities: &Vec<usize>, seed : u64) -> Self {
-        let new: Vec<usize> = cities.to_vec();
+    pub fn new(
+        epsilon: f64,
+        initial_temp: f64,
+        phi: f64,
+        cities: &Vec<usize>,
+        L: u32,
+        initial_sol_seed: u64,
+        neighbor_seed: u64,
+    ) -> Self {
+        let len = cities.len();
         Self {
-            initial_solution: new,
-            num_of_cities: num,
-            n1: 0,
-            n2: 0,
-            sum_of_distances: 0.0,
-            normalizer: 0.0,
-            all_cities: vec![
-                City {
-                    id: 0,
-                    lat: 0.0,
-                    long: 0.0,
-                };
-                num as usize
-            ],
-            all_connections: vec![vec![0.0f64; 1092]; 1092],
-            max_distance: 0.0,
-            r: StdRng::seed_from_u64(7),
+            cities: cities.clone(),
+            epsilon,
+            phi,
+            temp: initial_temp,
+            path: Path::new(len, &cities, neighbor_seed),
+            L,
+            best_path: cities.clone(),
+            best_eval: f64::INFINITY,
+            neighbor_seed,
+            initial_sol_seed,
         }
     }
 
-    pub fn prepare(&mut self) {
-        let reader: Reader = Reader::new("db/citiesDB.db");
-        self.get_cities_connections(&reader);
-        self.normalizer(&reader);
-        self.fill_distances();
-
+    pub fn get_best_eval(&self) -> f64 {
+        self.best_eval
     }
 
-    pub fn get_cost(&self) -> f64 {
-        self.sum_of_distances / self.normalizer
+    pub fn get_best_path(&self) -> Vec<usize> {
+        self.best_path.clone()
     }
 
-    pub fn get_max_distance(&self) -> f64 {
-        self.max_distance
+    pub fn get_neighbor_seed(&self) -> u64 {
+        self.neighbor_seed
     }
 
-    pub fn get_normalizer(&self) -> f64 {
-        self.normalizer
-    }
-    pub fn set_initial_solution(&mut self, arr: Vec<usize>) {
-        self.initial_solution = arr;
+    pub fn get_initial_sol_seed(&self) -> u64 {
+        self.initial_sol_seed
     }
 
-    pub fn get_sum_of_distances(&self) -> f64 {
-        self.sum_of_distances
-    }
+    fn calculate_batch(&mut self) -> f64 {
+        let mut counter = 0;
 
-    fn normalizer(&mut self, reader: &Reader) {
-        let mut arr: Vec<f64> = vec![0.0f64; self.num_of_cities as usize];
-        arr = reader.get_distances_ordered(&self.initial_solution);
-        self.max_distance = arr[0];
-        let mut norm: f64 = 0.0;
-        let mut range: usize = self.num_of_cities as usize;
-        if arr.len() < self.num_of_cities as usize {
-            range = arr.len();
-        }
+        let mut r = 0.0;
+        while counter < self.L {
+            let last_cost = self.path.get_cost() + self.temp;
+            self.path.get_neighbor(&mut self.cities);
+            let new_cost = self.path.get_cost();
 
-        for i in 0..range {
-            if i == self.num_of_cities as usize - 1 {
-                break;
-            } else {
-                norm += arr[i];
-            }
-        }
-        self.normalizer = norm;
-    }
+            if new_cost < last_cost {
+                println!("E:{:.20}", new_cost);
+                counter += 1;
+                r += new_cost;
 
-    fn get_cities_connections(&mut self, reader: &Reader) {
-        self.all_connections = reader.read_connections();
-        self.all_cities = reader.read_cities();
-    }
-
-    pub fn add_dist(&mut self, cities: &mut Vec<usize>) -> f64 {
-        let mut sum: f64 = 0.0;
-        for i in 1..self.num_of_cities as usize {
-            let row: usize = usize::try_from(cities[i - 1]).unwrap() - 1;
-            let column: usize = usize::try_from(cities[i]).unwrap() - 1;
-            sum += self.all_connections[row][column];
-            println!("add_dist: {:.15}]", self.all_connections[row][column]);
-        }
-        sum
-    }
-
-    pub fn add_initial_distance(&mut self) {
-        let mut sum: f64 = 0.0;
-        for i in 1..self.num_of_cities as usize {
-            sum += self.all_connections[self.initial_solution[i - 1]-1][self.initial_solution[i]-1];
-        }
-        self.sum_of_distances = sum;
-    }
-
-    
-    ///Fills all the unknown distances between two cities and saves then in self.all_connections
-    pub fn fill_distances(&mut self) {
-        for i in 0..1092 {
-            for j in (i + 1)..1092 {
-                if self.all_connections[i][j] == 0.0 || self.all_connections[j][i] == 0.0 {
-                    let dist = self.get_unknown_distance(self.all_cities[i], self.all_cities[j]);
-
-                    self.all_connections[i][j] = dist;
-                    self.all_connections[j][i] = dist;
+                if new_cost <= self.best_eval && new_cost < 1.0 {
+                    self.best_path = self.cities.clone();
+                    self.best_eval = new_cost;
                 }
+            } else {
+                self.path.undo(&mut self.cities);
+            }
+        }
+        r / f64::try_from(self.L).unwrap()
+    }
+
+    pub fn threshold_acceptance(&mut self) -> (f64, Vec<usize>, u64, u64) {
+        self.path.prepare();
+        self.cities = self
+            .path
+            .get_initial_solution(&mut self.cities, self.initial_sol_seed);
+        self.path.add_initial_distance();
+
+        let mut batch_average: f64 = 0.0;
+        while self.temp > self.epsilon {
+            let mut q: f64 = f64::INFINITY;
+            while batch_average < q {
+                q = batch_average;
+                batch_average = self.calculate_batch();
+            }
+
+            self.temp = self.phi * self.temp;
+            println!("T:{}", self.temp);
+        }
+
+        println!("S:{:.20}", self.best_eval);
+        println!("P:{:?}", self.best_path);
+        println!("N:{}", self.neighbor_seed);
+        println!("I:{}", self.initial_sol_seed);
+        (
+            self.best_eval,
+            self.best_path.clone(),
+            self.neighbor_seed,
+            self.initial_sol_seed,
+        )
+    }
+
+    pub fn sweep(&mut self) {
+        let norm = self.path.get_normalizer();
+       
+        for i in 0..self.best_path.len() {
+            let value = self.best_path[i];
+            for j in 1..self.best_path.len(){
+                self.best_path[i] = self.best_path[i];
+                
+                
             }
         }
     }
 
-    /// Calculates the natural distance between two cities
-    ///
-    /// # Arguments
-    ///
-    /// * `city1` - A City instance
-    /// * `city21 - A City instance
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// 
-    /// ```
-    pub fn get_unknown_distance(&mut self, city1: City, city2: City) -> f64 {
-        self.get_nat_distance(city1, city2) * self.max_distance
-    }
-
-    ///Calculates the natural distance between two cities
-    pub fn get_nat_distance(&self, city1: City, city2: City) -> f64 {
-        let A = pow(
-            sin((Self::to_rad(city2.lat) - Self::to_rad(city1.lat)) / 2.0),
-            2.0,
-        ) + (cos(Self::to_rad(city1.lat))
-            * cos(Self::to_rad(city2.lat))
-            * pow(
-                sin((Self::to_rad(city2.long) - Self::to_rad(city1.long)) / 2.0),
-                2.0,
-            ));
-
-        let C = 2.0 * atan2(sqrt(A), sqrt(1.0 - A));
-        let R = 6373000.0;
-        R * C
-    }
-
-    ///Converts degrees to radians
-    fn to_rad(num: f64) -> f64 {
-        num * PI / 180.0
-    }
-
-    ///Modifies the passed vector and randomly generates from a seed an initial solution
-    pub fn get_initial_solution(&mut self, cities: &mut Vec<usize>, seed: u64) -> Vec<usize> {
-        let mut r = StdRng::seed_from_u64(seed);
-        for i in 0..self.num_of_cities as usize {
-            let n: u16 = r.gen();
-            if n as usize != i {
-                let value = cities[i];
-                let index = n % u16::try_from(self.num_of_cities).unwrap();
-                cities[i] = cities[index as usize];
-                cities[index as usize] = value;
-            }
-        }
-        self.initial_solution = cities.to_vec();
-        cities.to_vec()
-    }
-
-    ///Modifies the passed slice and swaps two cities creating a neighboring solution
-    pub fn get_neighbor(&mut self, cities: &mut [usize]) {
-        self.n1 = self.r.gen::<usize>() % self.num_of_cities;
-        self.n2 = self.r.gen::<usize>() % self.num_of_cities;
-        while self.n1 == self.n2 {
-            self.n1 = self.r.gen::<usize>() % self.num_of_cities;
-            self.n2 = self.r.gen::<usize>() % self.num_of_cities;
-        }
-        
-        //get the original distance between neighbors before swapping
-        let previous_distances: f64 = self.get_sum(cities);
-
-        //swapping
-        let value = cities[self.n1 as usize];
-        cities[self.n1 as usize] = cities[self.n2 as usize];
-        cities[self.n2 as usize] = value;
-
-        //getting the new distances after swapping
-        let new_distances: f64 = self.get_sum(cities);
-
-        //adding and substracitng the distances to set the new updated sum of distances
-        self.sum_of_distances = self.sum_of_distances - previous_distances + new_distances;
-    }
-
-    ///Returns the sum of distances between two swapped cities 
-    fn get_sum(&mut self, cities: &mut [usize]) -> f64 {
-        let mut sum: f64 = 0.0;
-        let mut id: [usize; 6] = [1093; 6];
-        if self.n2 < self.n1 {
-            let value = self.n1;
-            self.n1 = self.n2;
-            self.n2 = value;
-        }
-
-        if self.n1 > 0 && self.n1 < (cities.len() - 1) {
-            id[0] = cities[self.n1 - 1] - 1;
-            id[1] = cities[self.n1] - 1;
-            id[2] = cities[self.n1 + 1] - 1;
-        }
-
-        if self.n2 > 0 && self.n2 < (cities.len() - 1) {
-            id[3] = cities[self.n2 - 1] - 1;
-            id[4] = cities[self.n2] - 1;
-            id[5] = cities[self.n2 + 1] - 1;
-        }
-
-        if self.n1 == 0 {
-            id[1] = cities[self.n1] - 1;
-            id[2] = cities[self.n1 + 1] - 1;
-        }
-
-        if self.n1 + 1 == self.n2 {
-            id[2] = 1093;
-        }
-
-        if self.n2 == cities.len() - 1 {
-            id[3] = cities[self.n2 - 1] - 1;
-            id[4] = cities[self.n2] - 1;
-        }
-
-        for i in 0..5 {
-            if id[i] == 1093 || id[i + 1] == 1093 {
-                continue;
-            } else if i == 2 {
-                continue;
-            }
-            sum = sum.mul_add(1.0, self.all_connections[id[i]][id[i + 1]]);
-        }
-        sum
-    }
     
-    ///
-    ///Function that returns a vector of city ids to its previous state
-    ///
-    pub fn undo(&mut self, cities: &mut [usize]) {
-        let previous = self.get_sum(cities);
-        let value = cities[self.n1];
-        cities[self.n1] = cities[self.n2];
-        cities[self.n2] = value;
-        let next = self.get_sum(cities);
-        self.sum_of_distances = self.sum_of_distances - previous + next;
-    }
 }

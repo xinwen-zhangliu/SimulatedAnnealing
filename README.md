@@ -1,6 +1,10 @@
 # SimulatedAnnealing
 
-## For compiling and running
+## For compiling and running with optimizations
+```
+cargo run --release
+```
+and without optimizations
 ```
 cargo run
 ```

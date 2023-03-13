@@ -1,5 +1,5 @@
 use simulated_annealing::reader::Reader;
-use simulated_annealing::sa::SimAnn;
+use simulated_annealing::path::Path;
 use simulated_annealing::testCases::Cases;
 
 // running with command line output
@@ -16,15 +16,16 @@ mod tests {
     use super::*;
 
     #[test]
-    /// Tests the function get_nat_distance in SimAnn against the distances in the database, byt getting a random selection of 25 pairs.
+    /// Tests the function get_nat_distance in Path against the distances in the database, byt getting a random selection of 25 pairs.
     fn test_nat_distance() {
         //we get 25 random pairs of cities and compare it witht he result from calculating the natural distance
         let query = r#"SELECT * FROM connections ORDER BY RANDOM() LIMIT 25;"#;
         let reader: Reader = Reader::new("db/citiesDB.db");
         let all_cities: Vec<City> = reader.read_cities();
-        let sa: SimAnn = SimAnn::new(
+        let path: Path = Path::new(
             Cases::new().l40.len().try_into().unwrap(),
             &Cases::new().l40,
+            123,
         );
 
         let connection = Connection::open("db/citiesDB.db").unwrap();
@@ -38,7 +39,7 @@ mod tests {
             let city2 = row.read::<i64, _>("id_city_2");
             let dist = row.read::<f64, _>("distance");
 
-            let nat_dist: f64 = sa.get_nat_distance(
+            let nat_dist: f64 = path.get_nat_distance(
                 all_cities[city1 as usize - 1],
                 all_cities[city2 as usize - 1],
             );
@@ -51,19 +52,19 @@ mod tests {
     fn test_cost_function() {
         let case: Cases = Cases::new();
         let mut results: Vec<f64> = Vec::new();
-        let mut sa40: SimAnn = SimAnn::new(case.l40.len().try_into().unwrap(), &case.l40);
-        let mut sa150: SimAnn = SimAnn::new(case.l150.len().try_into().unwrap(), &case.l150);
+        let mut path40: Path = Path::new(case.l40.len().try_into().unwrap(), &case.l40,123);
+        let mut path150: Path = Path::new(case.l150.len().try_into().unwrap(), &case.l150, 123);
 
-        sa40.prepare();
-        sa150.prepare();
-        sa40.add_initial_distance();
-        sa150.add_initial_distance();
-        results.push(sa40.get_cost());
-        results.push(sa40.get_max_distance());
-        results.push(sa40.get_normalizer());
-        results.push(sa150.get_cost());
-        results.push(sa150.get_max_distance());
-        results.push(sa150.get_normalizer());
+        path40.prepare();
+        path150.prepare();
+        path40.add_initial_distance();
+        path150.add_initial_distance();
+        results.push(path40.get_cost());
+        results.push(path40.get_max_distance());
+        results.push(path40.get_normalizer());
+        results.push(path150.get_cost());
+        results.push(path150.get_max_distance());
+        results.push(path150.get_normalizer());
 
         //cost max_distance normalizer
         //first for the case with 40 cities then for the case with 150 cities
@@ -85,43 +86,38 @@ mod tests {
     #[test]
     fn test_sum_of_distances() {
         let mut case: Cases = Cases::new();
-        let mut sa: SimAnn = SimAnn::new(case.l40.len().try_into().unwrap(), &case.l40);
-        sa.prepare();
+        let mut path: Path = Path::new(case.l40.len().try_into().unwrap(), &case.l40, 123);
+        path.prepare();
 
-        //let mut initial_solution = sa.get_initial_solution(&mut case.l40, 8);
-        sa.add_initial_distance();
+        //let mut initial_solution = path.get_initial_solution(&mut case.l40, 8);
+        path.add_initial_distance();
         for i in 1..100 {
-            println!("{}", sa.get_sum_of_distances());
-            sa.get_neighbor(&mut case.l40[..]);
-            let updated_sum = sa.get_sum_of_distances();
-            let linear_sum = sa.add_dist(&mut case.l40);
+            println!("{}", path.get_sum_of_distances());
+            path.get_neighbor(&mut case.l40[..]);
+            let updated_sum = path.get_sum_of_distances();
+            let linear_sum = path.add_dist(&mut case.l40);
             println!(
                 "{:?} \n update:{:.20} = linear:{:.201}",
                 case.l40, updated_sum, linear_sum
             );
-            println!("{}" , i);
-            assert!(approx_eq!(
-                f64,
-                updated_sum,
-                linear_sum,
-                epsilon = 1.0
-            ));
+            println!("{}", i);
+            assert!(approx_eq!(f64, updated_sum, linear_sum, epsilon = 1.0));
         }
     }
 
     #[test]
     fn test_sum_swap_unswap() {
         let mut case: Cases = Cases::new();
-        let mut sa: SimAnn = SimAnn::new(case.l40.len().try_into().unwrap(), &case.l40);
-        sa.prepare();
+        let mut path: Path = Path::new(case.l40.len().try_into().unwrap(), &case.l40, 123);
+        path.prepare();
 
         for _i in 1..50 {
-            let mut cities = sa.get_initial_solution(&mut case.l40, 7);
-            sa.add_initial_distance();
-            let before_swap = sa.get_cost();
-            sa.get_neighbor(&mut cities);
-            sa.undo(&mut cities);
-            let after_undo = sa.get_cost();
+            let mut cities = path.get_initial_solution(&mut case.l40, 7);
+            path.add_initial_distance();
+            let before_swap = path.get_cost();
+            path.get_neighbor(&mut cities);
+            path.undo(&mut cities);
+            let after_undo = path.get_cost();
 
             assert!(approx_eq!(
                 f64,
