@@ -1,5 +1,3 @@
-use rand::{rngs::StdRng, Rng, SeedableRng};
-
 use crate::path::Path;
 
 #[allow(non_snake_case)]
@@ -7,6 +5,7 @@ use crate::path::Path;
 pub struct SimAnn {
     cities: Vec<usize>,
     epsilon: f64,
+    epsilon_p: f64,
     phi: f64,
     temp: f64,
     path: Path,
@@ -39,6 +38,7 @@ impl SimAnn {
             best_eval: f64::INFINITY,
             neighbor_seed,
             initial_sol_seed,
+            epsilon_p: 0.001,
         }
     }
 
@@ -68,7 +68,7 @@ impl SimAnn {
             let new_cost = self.path.get_cost();
 
             if new_cost < last_cost {
-                println!("E:{:.20}", new_cost);
+                //println!("E:{:.20}", new_cost);
                 counter += 1;
                 r += new_cost;
 
@@ -83,6 +83,14 @@ impl SimAnn {
         r / f64::try_from(self.L).unwrap()
     }
 
+    ///
+    /// Runs the simulated annealing algorithm with threshold acceptance over the subset
+    /// of cities passed when initializing instance
+    ///
+    /// #Return types
+    /// Returns a tuple with the first element being the evaluation of the best solution found,
+    /// then the path oc cities, the seed used for finding neighbors and the seed used for the
+    /// initial solution.
     pub fn threshold_acceptance(&mut self) -> (f64, Vec<usize>, u64, u64) {
         self.path.prepare();
         self.cities = self
@@ -99,9 +107,15 @@ impl SimAnn {
             }
 
             self.temp = self.phi * self.temp;
-            println!("T:{}", self.temp);
+            //println!("T:{}", self.temp);
         }
 
+        let mut cities = self.best_path.clone();
+        let sweep = self.sweep(&mut cities);
+
+        self.best_eval = sweep.0;
+        self.best_path = sweep.1;
+        
         println!("S:{:.20}", self.best_eval);
         println!("P:{:?}", self.best_path);
         println!("N:{}", self.neighbor_seed);
@@ -114,18 +128,111 @@ impl SimAnn {
         )
     }
 
-    pub fn sweep(&mut self) {
-        let norm = self.path.get_normalizer();
-       
-        for i in 0..self.best_path.len() {
-            let value = self.best_path[i];
-            for j in 1..self.best_path.len(){
-                self.best_path[i] = self.best_path[i];
-                
-                
+    pub fn sweep(&mut self, cities: &mut [usize]) -> (f64, Vec<usize>) {
+        let mut path: Path = Path::new(cities.len(), &cities.to_vec(), 123);
+        path.prepare();
+        
+        let original_cost = path.add_dist(cities) / path.get_normalizer();
+        
+        let mut best_cost: f64 = original_cost;
+        let norm = path.get_normalizer();
+        let mut best_path = cities.to_vec();
+        let mut new_cost : f64 = 0.0;
+        
+        let swap = |x : &mut [usize], i : usize , j: usize| {
+            let value = x[i];
+            x[i] = x[j];
+            x[j] = value;
+        };
+        loop {
+            for i in 0..cities.len() - 1 {
+                for j in (i + 1)..cities.len() {
+   
+                    //println!("{:?}",&cities);
+                    swap(cities, i, j);
+                    //println!("{:?}",&cities);
+                    new_cost = path.add_dist(cities) / norm;
+
+                    if new_cost < best_cost {
+                        
+                        best_cost = new_cost;
+                        best_path = cities.to_vec().clone();
+                        //println!("{}, {}", "found better", new_cost);
+                    }
+
+                    swap(cities, i ,j);
+                }
+            }
+            
+            if new_cost > original_cost {
+                break;
             }
         }
+        (best_cost, best_path)
     }
 
-    
+    fn initial_temp(&mut self, s: &mut [usize], mut t: f64, p: f64) -> f64 {
+        let mut percentage = self.accepted_percentage(s, t);
+        let t1: f64;
+        let t2: f64;
+
+        if (p - percentage).abs() <= self.epsilon_p {
+            return t;
+        }
+
+        if percentage < p {
+            while percentage < p {
+                t *= 2.0;
+                percentage = self.accepted_percentage(s, t)
+            }
+            t1 = t / 2.0;
+            t2 = t;
+        } else {
+            while percentage > p {
+                t *= 0.5;
+                percentage = self.accepted_percentage(s, t);
+            }
+            t1 = t;
+            t2 = t * 2.0;
+        }
+
+        self.binary_search(s, t1, t2, p)
+    }
+
+    fn accepted_percentage(&mut self, s: &mut [usize], t: f64) -> f64 {
+        let n = 1000;
+        let mut counter = 0;
+        let mut new_s = s.to_vec();
+        let mut previous_cost: f64;
+        for _i in 0..n {
+            previous_cost = self.path.get_cost();
+            self.path.get_neighbor(s);
+
+            if self.path.get_cost() <= previous_cost + t {
+                counter += 1;
+            } else {
+                self.path.undo(s);
+            }
+        }
+        f64::try_from(counter).unwrap() / f64::try_from(n).unwrap()
+    }
+
+    fn binary_search(&mut self, s: &mut [usize], t1: f64, t2: f64, p: f64) -> f64 {
+        let tm: f64 = (t1 + t2) / 2.0;
+        if (t2 - t1) < self.epsilon_p {
+            return tm;
+        }
+
+        let percentage = self.accepted_percentage(s, tm);
+
+        if (p - percentage).abs() < self.epsilon_p {
+            return tm;
+        }
+
+        if percentage > p {
+            return self.binary_search(s, t1, tm, p);
+        } else {
+            return self.binary_search(s, tm, t2, p);
+        }
+    }
 }

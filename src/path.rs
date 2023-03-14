@@ -59,6 +59,11 @@ impl Path {
         self.fill_distances();
     }
 
+    pub fn set_n1_n2(&mut self, n1 : usize, n2 : usize){
+        self.n1 = n1;
+        self.n2 = n2;
+    }
+    
     pub fn get_cost(&self) -> f64 {
         self.sum_of_distances / self.normalizer
     }
@@ -70,8 +75,8 @@ impl Path {
     pub fn get_normalizer(&self) -> f64 {
         self.normalizer
     }
-    pub fn set_initial_solution(&mut self, arr: Vec<usize>) {
-        self.initial_solution = arr;
+    pub fn set_initial_solution(&mut self, arr: &mut [usize]) {
+        self.initial_solution = arr.to_vec();
     }
 
     pub fn get_sum_of_distances(&self) -> f64 {
@@ -103,13 +108,13 @@ impl Path {
         self.all_cities = reader.read_cities();
     }
 
-    pub fn add_dist(&mut self, cities: &mut Vec<usize>) -> f64 {
+    pub fn add_dist(&mut self, cities: &mut [usize]) -> f64 {
         let mut sum: f64 = 0.0;
         for i in 1..self.num_of_cities as usize {
             let row: usize = usize::try_from(cities[i - 1]).unwrap() - 1;
             let column: usize = usize::try_from(cities[i]).unwrap() - 1;
             sum += self.all_connections[row][column];
-            println!("add_dist: {:.15}]", self.all_connections[row][column]);
+           
         }
         sum
     }
@@ -206,6 +211,15 @@ impl Path {
         let new_distances: f64 = self.get_sum(cities);
 
         //adding and substracitng the distances to set the new updated sum of distances
+        self.sum_of_distances = self.sum_of_distances - previous_distances + new_distances;
+    }
+
+    pub fn swap(&mut self, cities : &mut [usize]){
+        let previous_distances: f64 = self.get_sum(cities);
+        let value = cities[self.n1 as usize];
+        cities[self.n1 as usize] = cities[self.n2 as usize];
+        cities[self.n2 as usize] = value;
+        let new_distances: f64 = self.get_sum(cities);
         self.sum_of_distances = self.sum_of_distances - previous_distances + new_distances;
     }
 

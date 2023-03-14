@@ -5,6 +5,6 @@
 -- target files from cargo
 /target
 
+-- large files 
+/results
 
---auto save files
-#hoc.pdf#

@@ -1,10 +1,9 @@
-use sqlite::Result;
-use std::env;
-use std::path::Path;
-
+use simulated_annealing::path::Path;
 use simulated_annealing::sa::SimAnn;
 use simulated_annealing::testCases::Cases;
 use simulated_annealing::threadspawninator::TSI;
+use sqlite::Result;
+use std::env;
 
 fn main() -> Result<()> {
     /*
@@ -22,23 +21,60 @@ fn main() -> Result<()> {
     //     }
     // }
 
-         let db_path = std::env::var_os("CARGO_MANIFEST_DIR").unwrap();
-        dbg!(&db_path);
-        let path_str = db_path.into_string().unwrap() + "/db/citiesDB.db";
+    // let db_path = std::env::var_os("CARGO_MANIFEST_DIR").unwrap();
+    //     dbg!(&db_path);
+    //     let path_str = db_path.into_string().unwrap() + "/db/citiesDB.db";
 
-    dbg!(path_str);
+    // dbg!(path_str);
     let mut thread = TSI::new();
     thread.spawn_threads(40);
 
-    // let mut sol: Solution = Solution::new(
-    //                 0.002,
-    //                 800000.0,
-    //                 0.95,
-    //                 &Cases::new().l40,
-    //                 2000,
-    //                 13603085585784548072,
-    //                 11058656509428391188,
-    // );
+    // let mut cities = vec![
+    //     54, 483, 186, 980, 327, 164, 331, 984, 491, 492, 489, 4, 978, 5, 6, 981, 333, 3, 165, 817,
+    //     979, 493, 329, 163, 172, 496, 815, 656, 2, 653, 490, 654, 820, 332, 982, 816, 7, 1, 168,
+    //     657,
+    // ];
+
+    // let mut cities = vec![483,979,186,980,327,164,331,984,491,492,489,
+    //               4,817,978,6,5,165,3,333,981,820,332,982,816,
+    //               7,654,490,653,2,656,1,168,657,815,496,172,163,
+    //               329,493,54];
+    // let eval = 0.26581737449345677060;
+
+    //  let mut sol: SimAnn = SimAnn::new(
+    //      0.002,
+    //      800000.0,
+    //      0.95,
+    //      &Cases::new().l40,
+    //      2000,
+    //      13603085585784548072,
+    //      7,
+    //  );
+
+    //  let mut path: Path = Path::new(40, &mut cities, 123);
+    //  path.prepare();
+    //  let original_cost: f64 = path.add_dist(&mut cities[..]) / path.get_normalizer();
+    // // loop {
+    //      let new_cost = sol.sweep(&mut cities);
+    //      println!("{:?}", &new_cost);
+    //      if new_cost.0 > original_cost {
+
+    //          //break;
+    //      }
+    //  //}
+
+    // let mut sweep = sol.sweep(&mut cities, eval);
+    // println!("{:?}", sol.sweep(&mut sweep.1[..], sweep.0));
+    // println!("{:?}", sweep);
+
+    //     S:0.26581737449345677060
+    //    [54,483,186,980,327,164,331,984,491,492,489,4,817,978,5,6,165,3,333,981,820,332,982,816,7,654,490,653,2,656,1,168,657,815,496,172,163,329,493,979];
+    //  P:[54,483,186,980,327,164,331,984,491,492,489,817,978,5,6,981,333,3,165,4,979,493,329,163,172,496,815,656,2,653,490,654,820,332,982,816,7,1,168, 657]
+    // N:11058656509428391188
+    // I:13603085585784548072
+
+    // [54,483,186,980,327,164,331,984,491,492,489,817,978,5,6,981,333,3,165,4,979,493,329,163,172,496,815,656,2,653,490,654,820,332,982,816,7,1,168,657]
+    // [54,483,186,980,327,164,331,984,491,492,489,817,978,5,6,981,333,3,165,4,979,493,329,163,172,496,815,656,2,653,490,654,820,332,982,816,7,1,168,657]
 
     // let mut sol: Solution = Solution::new(
     //             0.002,
@@ -65,9 +101,9 @@ fn main() -> Result<()> {
     //                7,
     //            );
 
-    //ran with seed = 7 in sa
-    
-    // let mut sol: Solution = Solution::new(
+    //ran with seed = 7 in sa now path
+
+    // let mut sol: SimAnn = SimAnn::new(
     //     0.002,
     //     2000000.0,
     //     0.95,
@@ -76,7 +112,18 @@ fn main() -> Result<()> {
     //     17132881300615463402,
     //     16071864923883299597,
     // );
+
+    // let mut  cities : Vec<usize> = vec![54,483,186,980,327,164,331,984,491,492,489,4,817,978,5,6,165,3,333,981,820,332,982,816,7,654,490,653,2,656,1,168,657,815,496,172,163,329,493,979];
+    // let mut sol: Path = Path::new(
+    //     40, &cities, 123
+    // );
+    // sol.prepare();
+    // let norm = sol.get_normalizer();
+    // let dist = sol.add_dist(&mut cities);
+    // dbg!(dist/norm);
     // sol.threshold_acceptance();
 
+    //c150 : 0.149078160
+    //c40 : 0.263713270
     Ok(())
 }
