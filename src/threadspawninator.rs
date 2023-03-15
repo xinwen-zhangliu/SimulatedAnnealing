@@ -65,7 +65,7 @@ impl TSI {
                         0.002,
                         800000.0,
                         0.95,
-                        &Cases::new().l40,
+                        &Cases::new().l150,
                         2000,
                         r.gen(),
                         r.gen(),

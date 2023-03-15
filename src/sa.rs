@@ -68,7 +68,7 @@ impl SimAnn {
             let new_cost = self.path.get_cost();
 
             if new_cost < last_cost {
-                println!("E:{:.20}", new_cost);
+                //println!("E:{:.20}", new_cost);
                 counter += 1;
                 r += new_cost;
 
@@ -107,22 +107,23 @@ impl SimAnn {
             }
 
             self.temp = self.phi * self.temp;
-            println!("T:{}", self.temp);
+            //println!("T:{}", self.temp);
         }
   
         let mut cities = self.best_path.clone();
         let mut sweep = self.sweep(&mut cities);
-
+        let mut best_sweep = (self.best_eval, cities); 
         loop {
             let mut new_sweep = self.sweep(&mut sweep.1.clone());
 
-            if &new_sweep.0 < &sweep.0 {
-                sweep = new_sweep.clone();
+            if &new_sweep.0 < &best_sweep.0 {
+                best_sweep = new_sweep.clone();
             }
-            new_sweep = self.sweep(&mut sweep.1.clone());
+            //new_sweep = self.sweep(&mut sweep.1.clone());
             if &new_sweep.0 == &sweep.0 {
                 break;
             }
+            sweep = new_sweep;
         }
         self.best_eval = sweep.0;
         self.best_path = sweep.1;
