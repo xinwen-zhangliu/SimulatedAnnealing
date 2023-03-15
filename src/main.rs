@@ -26,8 +26,9 @@ fn main() -> Result<()> {
     //     let path_str = db_path.into_string().unwrap() + "/db/citiesDB.db";
 
     // dbg!(path_str);
+    
     let mut thread = TSI::new();
-    thread.spawn_threads(40);
+    thread.spawn_threads(2000);
   
 
     //best solution for 40 cities 

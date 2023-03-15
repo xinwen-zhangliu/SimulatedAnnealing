@@ -1,6 +1,6 @@
 use rand::Rng;
 use std::thread;
-
+use itertools::Itertools;
 use std::thread::JoinHandle;
 
 use crate::{sa::SimAnn, testCases::Cases};
@@ -17,9 +17,9 @@ type Type = SimAnn;
 impl TSI {
     pub fn new() -> Self {
         Self {
-            //num_of_threads: num_cpus::get(),
+            num_of_threads: num_cpus::get(),
             //best_path_overall: vec![0.0f64; num],
-            num_of_threads: 24,
+            //num_of_threads: 24,
             best_eval_overall: f64::NEG_INFINITY,
 
             best_solution: None,
@@ -27,7 +27,8 @@ impl TSI {
     }
 
     pub fn spawn_threads(&mut self, num: usize) {
-        let mut tuples = self.spawner(5);
+        let num_iter = num/ self.num_of_threads;
+        let mut tuples = self.spawner(num_iter);
         // let mut new_tuples = tuples.clone();
         // //new_tuples = tuples.into_iter().filter(|x| {x.0 < 0.264}).collect();
         // tuples.iter().for_each(|t| {
@@ -38,7 +39,8 @@ impl TSI {
         //         tuples = self.spawner(40);
         //     };
         // });
-
+        // let tuples = tuples.into_iter().sorted_unstable_by_key(|x| -x.0).map(|x| x).collect();
+         tuples.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
         for t in tuples {
             println!("{:?}", t);
         }
@@ -87,7 +89,7 @@ impl TSI {
             v.push(Some(join_handle));
         }
 
-        let mut tuples = vec![(0.0f64, vec![0usize; num], 0u64, 0u64); 24];
+        let mut tuples = vec![(0.0f64, vec![0usize; num], 0u64, 0u64); self.num_of_threads];
         loop {
             // Check if all threads are finished otherwise they will block each other
             //until the previous one finishes

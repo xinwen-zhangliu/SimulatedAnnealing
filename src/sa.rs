@@ -92,10 +92,17 @@ impl SimAnn {
     /// then the path oc cities, the seed used for finding neighbors and the seed used for the
     /// initial solution.
     pub fn threshold_acceptance(&mut self) -> (f64, Vec<usize>, u64, u64) {
+        
+        
         self.path.prepare();
         self.cities = self
             .path
             .get_initial_solution(&mut self.cities, self.initial_sol_seed);
+        //prepare initial temp
+        self.temp = self.initial_temp( &mut self.cities.clone(),8.0, 0.92 );
+        println!("IT:{}", self.temp);
+        //
+        
         self.path.add_initial_distance();
 
         let mut batch_average: f64 = 0.0;
