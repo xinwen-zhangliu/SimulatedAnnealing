@@ -39,9 +39,8 @@ impl TSI {
         //     };
         // });
 
-        for t in tuples{
+        for t in tuples {
             println!("{:?}", t);
-
         }
     }
 
@@ -56,22 +55,11 @@ impl TSI {
 
             let join_handle = thread::spawn(move || {
                 let mut r = rand::thread_rng();
-                let mut sol: SimAnn = SimAnn::new(
-                    0.002,
-                    800000.0,
-                    0.95,
-                    &Cases::new().l40,
-                    2000,
-                    r.gen(),
-                    r.gen(),
-                );
-
                 let mut counter = 0;
-                //let wanted_solution = 0.264;
-                let mut tuple = sol.threshold_acceptance();
-                let mut new_tuple = (f64::INFINITY, vec![0usize; tuple.1.len()], 0, 0);
 
-                while counter < average {
+               
+                let mut best_tuple = (f64::INFINITY, vec![0usize; 40], 0, 0);
+                loop {
                     counter += 1;
                     let mut sol: SimAnn = SimAnn::new(
                         0.002,
@@ -83,28 +71,17 @@ impl TSI {
                         r.gen(),
                     );
 
-                    new_tuple = sol.threshold_acceptance();
-                    if new_tuple.0 < tuple.0 {
-                        tuple = new_tuple;
+                    let new_tuple = sol.threshold_acceptance();
+                    if new_tuple.0 < best_tuple.0 {
+                        best_tuple = new_tuple;
+                    }
+                    if counter > num {
+                        break;
                     }
                 }
-                // while tuple.0 > wanted_solution {
-                //     let mut sol: SimAnn = SimAnn::new(
-                //         0.002,
-                //         800000.0,
-                //         0.95,
-                //         &Cases::new().l40,
-                //         2000,
-                //         r.gen(),
-                //         r.gen(),
-                //     );
-                //     let new_tuple = sol.threshold_acceptance();
-                //     if new_tuple.0 < tuple.0 {
-                //         tuple = new_tuple;
-                //     }
-                // }
+         
 
-                send_finished_thread.send(tuple).unwrap();
+                send_finished_thread.send(best_tuple).unwrap();
                 tx.send(i).unwrap();
             });
             v.push(Some(join_handle));

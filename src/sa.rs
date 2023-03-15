@@ -68,7 +68,7 @@ impl SimAnn {
             let new_cost = self.path.get_cost();
 
             if new_cost < last_cost {
-                //println!("E:{:.20}", new_cost);
+                println!("E:{:.20}", new_cost);
                 counter += 1;
                 r += new_cost;
 
@@ -107,15 +107,26 @@ impl SimAnn {
             }
 
             self.temp = self.phi * self.temp;
-            //println!("T:{}", self.temp);
+            println!("T:{}", self.temp);
         }
-
+  
         let mut cities = self.best_path.clone();
-        let sweep = self.sweep(&mut cities);
+        let mut sweep = self.sweep(&mut cities);
 
+        loop {
+            let mut new_sweep = self.sweep(&mut sweep.1.clone());
+
+            if &new_sweep.0 < &sweep.0 {
+                sweep = new_sweep.clone();
+            }
+            new_sweep = self.sweep(&mut sweep.1.clone());
+            if &new_sweep.0 == &sweep.0 {
+                break;
+            }
+        }
         self.best_eval = sweep.0;
         self.best_path = sweep.1;
-        
+
         println!("S:{:.20}", self.best_eval);
         println!("P:{:?}", self.best_path);
         println!("N:{}", self.neighbor_seed);
@@ -131,43 +142,34 @@ impl SimAnn {
     pub fn sweep(&mut self, cities: &mut [usize]) -> (f64, Vec<usize>) {
         let mut path: Path = Path::new(cities.len(), &cities.to_vec(), 123);
         path.prepare();
-        
-        let original_cost = path.add_dist(cities) / path.get_normalizer();
-        
-        let mut best_cost: f64 = original_cost;
         let norm = path.get_normalizer();
+       
+        let mut best_cost: f64 = path.add_dist(cities) / norm;
+
         let mut best_path = cities.to_vec();
-        let mut new_cost : f64 = 0.0;
-        
-        let swap = |x : &mut [usize], i : usize , j: usize| {
+
+        let swap = |x: &mut [usize], i: usize, j: usize| {
             let value = x[i];
             x[i] = x[j];
             x[j] = value;
         };
-        loop {
-            for i in 0..cities.len() - 1 {
-                for j in (i + 1)..cities.len() {
-   
-                    //println!("{:?}",&cities);
-                    swap(cities, i, j);
-                    //println!("{:?}",&cities);
-                    new_cost = path.add_dist(cities) / norm;
 
-                    if new_cost < best_cost {
-                        
-                        best_cost = new_cost;
-                        best_path = cities.to_vec().clone();
-                        //println!("{}, {}", "found better", new_cost);
-                    }
+        for i in 0..cities.len() - 1 {
+            for j in (i + 1)..cities.len() {
+                
+                swap(cities, i, j);
+                
+                let new_cost: f64 = path.add_dist(cities) / norm;
 
-                    swap(cities, i ,j);
+                if new_cost < best_cost {
+                    best_cost = new_cost;
+                    best_path = cities.to_vec().clone();
                 }
-            }
-            
-            if new_cost > original_cost {
-                break;
+
+                swap(cities, i, j);
             }
         }
+
         (best_cost, best_path)
     }
 

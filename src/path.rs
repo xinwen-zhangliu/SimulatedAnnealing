@@ -108,7 +108,7 @@ impl Path {
         self.all_cities = reader.read_cities();
     }
 
-    pub fn add_dist(&mut self, cities: &mut [usize]) -> f64 {
+    pub fn add_dist(& self, cities: & [usize]) -> f64 {
         let mut sum: f64 = 0.0;
         for i in 1..self.num_of_cities as usize {
             let row: usize = usize::try_from(cities[i - 1]).unwrap() - 1;
