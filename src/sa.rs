@@ -102,6 +102,8 @@ impl SimAnn {
         self.temp = self.initial_temp( &mut self.cities.clone(),8.0, 0.92 );
         println!("IT:{}", self.temp);
         //
+
+
         
         self.path.add_initial_distance();
 
@@ -212,7 +214,7 @@ impl SimAnn {
     fn accepted_percentage(&mut self, s: &mut [usize], t: f64) -> f64 {
         let n = 1000;
         let mut counter = 0;
-        let mut new_s = s.to_vec();
+        //let mut new_s = s.to_vec();
         let mut previous_cost: f64;
         for _i in 0..n {
             previous_cost = self.path.get_cost();

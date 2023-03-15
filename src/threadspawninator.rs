@@ -1,6 +1,6 @@
+use itertools::Itertools;
 use rand::Rng;
 use std::thread;
-use itertools::Itertools;
 use std::thread::JoinHandle;
 
 use crate::{sa::SimAnn, testCases::Cases};
@@ -19,7 +19,7 @@ impl TSI {
         Self {
             num_of_threads: num_cpus::get(),
             //best_path_overall: vec![0.0f64; num],
-            //num_of_threads: 24,
+            //num_of_threads: 50,
             best_eval_overall: f64::NEG_INFINITY,
 
             best_solution: None,
@@ -27,20 +27,9 @@ impl TSI {
     }
 
     pub fn spawn_threads(&mut self, num: usize) {
-        let num_iter = num/ self.num_of_threads;
+        let num_iter = num / self.num_of_threads;
         let mut tuples = self.spawner(num_iter);
-        // let mut new_tuples = tuples.clone();
-        // //new_tuples = tuples.into_iter().filter(|x| {x.0 < 0.264}).collect();
-        // tuples.iter().for_each(|t| {
-        //     if t.0 < 0.264 {
-        //         return;
-        //         println!("{:?}", t);
-        //     } else {
-        //         tuples = self.spawner(40);
-        //     };
-        // });
-        // let tuples = tuples.into_iter().sorted_unstable_by_key(|x| -x.0).map(|x| x).collect();
-         tuples.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+        tuples.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
         for t in tuples {
             println!("{:?}", t);
         }
@@ -59,16 +48,15 @@ impl TSI {
                 let mut r = rand::thread_rng();
                 let mut counter = 0;
 
-               
                 let mut best_tuple = (f64::INFINITY, vec![0usize; 40], 0, 0);
                 loop {
                     counter += 1;
                     let mut sol: SimAnn = SimAnn::new(
                         0.002,
                         800000.0,
-                        0.95,
+                        0.98,
                         &Cases::new().l150,
-                        2000,
+                        1500,
                         r.gen(),
                         r.gen(),
                     );
@@ -81,7 +69,6 @@ impl TSI {
                         break;
                     }
                 }
-         
 
                 send_finished_thread.send(best_tuple).unwrap();
                 tx.send(i).unwrap();
@@ -98,13 +85,10 @@ impl TSI {
                 break;
             }
 
-            // Wait until a thread is finished, then join it
             let i = rx.recv().unwrap();
             tuples[i] = receive_finished_thread.recv().unwrap();
             let join_handle = std::mem::take(&mut v[i]).unwrap();
-            //println!("Joining {} ...", i);
             join_handle.join().unwrap();
-            //println!("{} joined.", i);
         }
         tuples
     }
