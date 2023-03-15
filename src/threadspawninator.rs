@@ -1,6 +1,6 @@
 use itertools::Itertools;
 use rand::Rng;
-use std::thread;
+use std::{thread, sync::mpsc};
 use std::thread::JoinHandle;
 
 use crate::{sa::SimAnn, testCases::Cases};
@@ -37,31 +37,36 @@ impl TSI {
 
     fn spawner(&mut self, num: usize) -> Vec<(f64, Vec<usize>, u64, u64)> {
         let mut v: Vec<Option<JoinHandle<()>>> = Vec::new();
-        let (send_finished_thread, receive_finished_thread) = std::sync::mpsc::channel();
-        let (tx, rx) = std::sync::mpsc::channel();
-        let average = num / self.num_of_threads;
+        let (send_finished_thread, receive_finished_thread) = mpsc::channel();
+        let (tx, rx) = mpsc::channel();
+        let (ctx, crx) = mpsc::channel();
+        
         for i in 0..self.num_of_threads {
             let send_finished_thread = send_finished_thread.clone();
             let tx = tx.clone();
+            let ctx = ctx.clone();
 
             let join_handle = thread::spawn(move || {
                 let mut r = rand::thread_rng();
-                let mut counter = 0;
-
+                let mut counter = 1;
+                let mut feasible_solutions = 0.0;
                 let mut best_tuple = (f64::INFINITY, vec![0usize; 40], 0, 0);
                 loop {
                     counter += 1;
                     let mut sol: SimAnn = SimAnn::new(
-                        0.002,
+                        0.001,
                         800000.0,
                         0.98,
                         &Cases::new().l150,
-                        1500,
+                        1000,
                         r.gen(),
                         r.gen(),
                     );
 
                     let new_tuple = sol.threshold_acceptance();
+                    if new_tuple.0 < 1.0 {
+                        feasible_solutions += 1.0;
+                    }
                     if new_tuple.0 < best_tuple.0 {
                         best_tuple = new_tuple;
                     }
@@ -72,10 +77,11 @@ impl TSI {
 
                 send_finished_thread.send(best_tuple).unwrap();
                 tx.send(i).unwrap();
+                ctx.send(feasible_solutions).unwrap();
             });
             v.push(Some(join_handle));
         }
-
+        let mut counter = 0.0;
         let mut tuples = vec![(0.0f64, vec![0usize; num], 0u64, 0u64); self.num_of_threads];
         loop {
             // Check if all threads are finished otherwise they will block each other
@@ -87,9 +93,11 @@ impl TSI {
 
             let i = rx.recv().unwrap();
             tuples[i] = receive_finished_thread.recv().unwrap();
+            counter += crx.recv().unwrap();
             let join_handle = std::mem::take(&mut v[i]).unwrap();
             join_handle.join().unwrap();
         }
+        println!("AP:{}" ,  counter/(num as f64 * 12.0));
         tuples
     }
 }

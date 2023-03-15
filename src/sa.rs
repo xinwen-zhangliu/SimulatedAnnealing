@@ -99,7 +99,7 @@ impl SimAnn {
             .path
             .get_initial_solution(&mut self.cities, self.initial_sol_seed);
         //prepare initial temp
-        self.temp = self.initial_temp( &mut self.cities.clone(),8.0, 0.92 );
+        self.temp = self.initial_temp( &mut self.cities.clone(),32.0, 0.99 );
         println!("IT:{}", self.temp);
         //
 
@@ -132,6 +132,7 @@ impl SimAnn {
             if &new_sweep.0 == &sweep.0 {
                 break;
             }
+            
             sweep = new_sweep;
         }
         self.best_eval = sweep.0;
@@ -170,8 +171,9 @@ impl SimAnn {
                 swap(cities, i, j);
                 
                 let new_cost: f64 = path.add_dist(cities) / norm;
-
+                
                 if new_cost < best_cost {
+                    //println!("E:{}" , new_cost);
                     best_cost = new_cost;
                     best_path = cities.to_vec().clone();
                 }
