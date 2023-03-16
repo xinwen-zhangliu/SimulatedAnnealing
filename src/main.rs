@@ -28,7 +28,7 @@ fn main() -> Result<()> {
     // dbg!(path_str);
     
     let mut thread = TSI::new();
-    thread.spawn_threads(500);
+    thread.spawn_threads(200);
   
 
   //  best solution for 40 cities 

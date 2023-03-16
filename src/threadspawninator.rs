@@ -54,7 +54,7 @@ impl TSI {
                 loop {
                     counter += 1;
                     let mut sol: SimAnn = SimAnn::new(
-                        0.001,
+                        0.0001,
                         800000.0,
                         0.98,
                         &Cases::new().l150,
@@ -81,6 +81,7 @@ impl TSI {
             });
             v.push(Some(join_handle));
         }
+        
         let mut counter = 0.0;
         let mut tuples = vec![(0.0f64, vec![0usize; num], 0u64, 0u64); self.num_of_threads];
         loop {
@@ -97,6 +98,7 @@ impl TSI {
             let join_handle = std::mem::take(&mut v[i]).unwrap();
             join_handle.join().unwrap();
         }
+        
         println!("AP:{}" ,  counter/(num as f64 * 12.0));
         tuples
     }
