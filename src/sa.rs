@@ -68,7 +68,7 @@ impl SimAnn {
             let new_cost = self.path.get_cost();
 
             if new_cost < last_cost {
-                println!("E:{:.20}", new_cost);
+               // println!("E:{:.20}", new_cost);
                 counter += 1;
                 r += new_cost;
 
@@ -107,7 +107,7 @@ impl SimAnn {
         
         self.path.add_initial_distance();
 
-        let mut batch_average: f64 = 0.0;
+        let mut batch_average: f64 = 1000000000.0;
         while self.temp > self.epsilon {
             let mut q: f64 = f64::INFINITY;
             while batch_average < q {
@@ -116,7 +116,7 @@ impl SimAnn {
             }
 
             self.temp = self.phi * self.temp;
-            println!("T:{}", self.temp);
+            //println!("T:{}", self.temp);
         }
   
         let mut cities = self.best_path.clone();
@@ -129,7 +129,7 @@ impl SimAnn {
                 best_sweep = new_sweep.clone();
             }
             //new_sweep = self.sweep(&mut sweep.1.clone());
-            if &new_sweep.0 == &sweep.0 {
+            if &new_sweep.0 >= &sweep.0 {
                 break;
             }
             
@@ -173,8 +173,8 @@ impl SimAnn {
                 let new_cost: f64 = path.add_dist(cities) / norm;
                 
                 if new_cost < best_cost {
-                    println!("E:{}" , new_cost);
-                    println!("ES:{}" , new_cost);
+                   // println!("E:{}" , new_cost);
+                   // println!("ES:{}" , new_cost);
                     best_cost = new_cost;
                     best_path = cities.to_vec().clone();
                 }
