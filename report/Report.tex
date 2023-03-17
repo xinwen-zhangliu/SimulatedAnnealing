@@ -19,6 +19,7 @@ right=1in,
 top=2in,
 bottom=1in,
 footskip=.25in]{geometry}
+\usepackage{cite} %bibtex
 
 
 \pretitle{\begin{center}\linespread{1}}%\LARGE\bfseries \bigskip \rule{\textwidth}{2pt} \noindent
@@ -50,23 +51,32 @@ footskip=.25in]{geometry}
 \maketitle
 
 \subsection*{El problema del agente viajero}
-El problema del agente viajero es uno de los problemas de Optimización combinatoria m\'as estudiados . Una pregunta f\'acil de hacer pero dif\'icil de repsonder:
+El problema del agente viajero es uno de los problemas de Optimización combinatoria m\'as estudiados. Introducido por primera vez en 1930 , 
+
+\\Este problema plantea una pregunta f\'acil de hacer pero dif\'icil de repsonder:
 \begin{center}
   Dado un conjunto de ciudades y sus coordenadas en el plano cartesiano, ?`cu\'al es ek camino m\'as corto que visite cada ciudad exactamente una vez?
 \end{center}
 La manera m\'a directa de resolver este problema ser\'ia listar todas las prosibles combinaciones de caminos que pasen por las ciudades deseadas y comparar sus costos. Sin embargo el n\'umero de combinaciones diferentes con $n$ ciudades crece a la par de  $n!$, lo que hace que la cantidad de posibles combinaciones crezca a un paso colosal cuando incrementamos $n$.\\
 
-Imaginemos que tenemos $10$ ciudades, entonces $10! = 10 \times 9 \dots \times 1 = 3,628,800$
-
+Imaginemos que tenemos $5$ ciudades, entonces $5! = 5\times 4\times 3 \times 2\times 1 = 120$ , ahora dupliquemos el n\'umero de ciudades , entonces $10! = 10 \times 9 \dots \times 1 = 3,628,800$, podemos ver a esta cantidad crecer 
 
 
 \subsection*{Recocido Simulado}
 El t\'ermino recocido (annealing) proveniente de la t\'ecnica 
 \section*{Implementaci\'on}
-\subsection*{Lenguaje de rpogramaci\'on}
+
+EL lenguaje usado para este proyecto fue Rust. Uand e las cuantas razones por esta decisi\'on fue la rapidez, y robusto. LA rapidez es un factor muy influyente en la experimentaci\'on, ya que facilita 
+
+
 \subsection*{El algoritmo}
 
 \section*{Experimentaci\'on y resultados}
+The higher the number of cities, a lower epsilon seems to work better. On the other hand for the case with 40 cities if the epsilo is 0.0001 then it seems to fall into a weird loop and the algorithm either doesn't end or take a long time  to finish. So it's not reaching the minimum temperature for some reason.
+
+Also increasing 
+
+
 
 \section*{Conclusiones}
 

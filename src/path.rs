@@ -49,9 +49,8 @@ impl Path {
     }
 
     pub fn prepare(&mut self) {
-        let db_path = env::var("CARGO_MANIFEST_DIR").unwrap();
+        let db_path = env::var("CARGO_MANIFEST_DIR").unwrap_or_else(|x| "../..".to_string());
         let path_str = db_path + "/db/citiesDB.db";
-
         let reader: Reader = Reader::new(&path_str);
 
         self.get_cities_connections(&reader);
@@ -59,11 +58,11 @@ impl Path {
         self.fill_distances();
     }
 
-    pub fn set_n1_n2(&mut self, n1 : usize, n2 : usize){
+    pub fn set_n1_n2(&mut self, n1: usize, n2: usize) {
         self.n1 = n1;
         self.n2 = n2;
     }
-    
+
     pub fn get_cost(&self) -> f64 {
         self.sum_of_distances / self.normalizer
     }
@@ -108,13 +107,12 @@ impl Path {
         self.all_cities = reader.read_cities();
     }
 
-    pub fn add_dist(& self, cities: & [usize]) -> f64 {
+    pub fn add_dist(&self, cities: &[usize]) -> f64 {
         let mut sum: f64 = 0.0;
         for i in 1..self.num_of_cities as usize {
             let row: usize = usize::try_from(cities[i - 1]).unwrap() - 1;
             let column: usize = usize::try_from(cities[i]).unwrap() - 1;
             sum += self.all_connections[row][column];
-           
         }
         sum
     }
@@ -214,7 +212,7 @@ impl Path {
         self.sum_of_distances = self.sum_of_distances - previous_distances + new_distances;
     }
 
-    pub fn swap(&mut self, cities : &mut [usize]){
+    pub fn swap(&mut self, cities: &mut [usize]) {
         let previous_distances: f64 = self.get_sum(cities);
         let value = cities[self.n1 as usize];
         cities[self.n1 as usize] = cities[self.n2 as usize];

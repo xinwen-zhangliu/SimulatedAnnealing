@@ -1,51 +1,68 @@
 use itertools::Itertools;
 use rand::Rng;
-use std::{thread, sync::mpsc};
 use std::thread::JoinHandle;
-
-use crate::{sa::SimAnn, testCases::Cases};
+use std::{sync::mpsc, thread};
+use crate::sa::SimAnn;
 
 pub struct TSI {
     num_of_threads: usize,
-    //best_path_overall: Vec<usize>,
-    best_eval_overall: f64,
-    best_solution: Option<SimAnn>,
 }
-
-type Type = SimAnn;
 
 impl TSI {
     pub fn new() -> Self {
         Self {
             num_of_threads: num_cpus::get(),
-            //best_path_overall: vec![0.0f64; num],
-            //num_of_threads: 50,
-            best_eval_overall: f64::NEG_INFINITY,
-
-            best_solution: None,
         }
     }
 
-    pub fn spawn_threads(&mut self, num: usize) {
+    pub fn spawn_threads(
+        &mut self,
+        num: usize,
+        epsilon: f64,
+        phi: f64,
+        batch_size: u32,
+        neighbor_seed: u64,
+        initial_sol_seed: u64,
+        cities: Vec<usize>,
+    ) {
         let num_iter = num / self.num_of_threads;
-        let mut tuples = self.spawner(num_iter);
-        tuples.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
-        for t in tuples {
-            println!("{:?}", t);
+        if initial_sol_seed != 0 &&  neighbor_seed != 0 {
+            let mut sol: SimAnn = SimAnn::new(
+                epsilon,
+                phi,
+                &cities,
+                batch_size,
+                initial_sol_seed,
+                neighbor_seed,
+            );
+            sol.threshold_acceptance();
+        } else {
+            let mut tuples = self.spawner(num_iter, epsilon, phi, batch_size, cities);
+            tuples.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+            for t in tuples {
+                println!("{:?}", t);
+            }
         }
     }
 
-    fn spawner(&mut self, num: usize) -> Vec<(f64, Vec<usize>, u64, u64)> {
+    fn spawner(
+        &mut self,
+        num: usize,
+        epsilon: f64,
+        phi: f64,
+        batch_size: u32,
+        cities: Vec<usize>,
+    ) -> Vec<(f64, Vec<usize>, u64, u64)> {
         let mut v: Vec<Option<JoinHandle<()>>> = Vec::new();
         let (send_finished_thread, receive_finished_thread) = mpsc::channel();
         let (tx, rx) = mpsc::channel();
         let (ctx, crx) = mpsc::channel();
-        
+
         for i in 0..self.num_of_threads {
             let send_finished_thread = send_finished_thread.clone();
             let tx = tx.clone();
             let ctx = ctx.clone();
-
+            let cities = cities.clone();
             let join_handle = thread::spawn(move || {
                 let mut r = rand::thread_rng();
                 let mut counter = 1;
@@ -54,11 +71,10 @@ impl TSI {
                 loop {
                     counter += 1;
                     let mut sol: SimAnn = SimAnn::new(
-                        0.0001,
-                        800000.0,
-                        0.98,
-                        &Cases::new().l150,
-                        1000,
+                        epsilon,
+                        phi,
+                        &cities,
+                        batch_size,
                         r.gen(),
                         r.gen(),
                     );
@@ -81,12 +97,10 @@ impl TSI {
             });
             v.push(Some(join_handle));
         }
-        
+
         let mut counter = 0.0;
         let mut tuples = vec![(0.0f64, vec![0usize; num], 0u64, 0u64); self.num_of_threads];
         loop {
-            // Check if all threads are finished otherwise they will block each other
-            //until the previous one finishes
             let num_left = v.iter().filter(|th| th.is_some()).count();
             if num_left == 0 {
                 break;
@@ -98,8 +112,8 @@ impl TSI {
             let join_handle = std::mem::take(&mut v[i]).unwrap();
             join_handle.join().unwrap();
         }
-        
-        println!("AP:{}" ,  counter/(num as f64 * 12.0));
+
+        println!("AP:{}", counter / (num as f64 * 12.0));
         tuples
     }
 }
