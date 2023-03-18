@@ -15,12 +15,22 @@ pub struct SimAnn {
     initial_sol_seed: u64,
     neighbor_seed: u64,
 }
-
+/// This struct performs the simulated annealing algorithm with threshold aceptance
 impl SimAnn {
+    
+    /// Constructor
+    /// # Arguments
+    /// * `epsilon` - The algorithm will stop when the temperature reaches this point
+    /// * `phi` - The rate at which the temparature cools down
+    /// * `cities` - The list of cities over which to perform the algoritm over
+    /// *  `initial_sol_seed` - The seed used to generate the initial solution
+    /// * `neighbor_seed` - The seed used to find neighboring solutions
+    /// * `L` - The batch size
     pub fn new(
         epsilon: f64,
         phi: f64,
         cities: &Vec<usize>,
+        #[allow(non_snake_case)]
         L: u32,
         initial_sol_seed: u64,
         neighbor_seed: u64,
@@ -30,7 +40,7 @@ impl SimAnn {
             cities: cities.clone(),
             epsilon,
             phi,
-            temp : 0.0,
+            temp: 0.0,
             path: Path::new(len, &cities, neighbor_seed),
             L,
             best_path: cities.clone(),
@@ -41,33 +51,38 @@ impl SimAnn {
         }
     }
 
+    /// Returns the evaluation for the best path found
     pub fn get_best_eval(&self) -> f64 {
         self.best_eval
     }
 
+    /// Returns the a vector with the best path
     pub fn get_best_path(&self) -> Vec<usize> {
         self.best_path.clone()
     }
 
+    /// Returns the seed used for generating neighboring paths
     pub fn get_neighbor_seed(&self) -> u64 {
         self.neighbor_seed
     }
 
+    /// Return the seed used to get the initial solution.
     pub fn get_initial_sol_seed(&self) -> u64 {
         self.initial_sol_seed
     }
 
+    /// Calculates each batch for the threshold acceptance algorithm.
     fn calculate_batch(&mut self) -> f64 {
         let mut counter = 0;
         let mut iter_counter = 0;
         let mut r = 0.0;
-        while counter < self.L {//&& iter_counter < 5000000 {
+        while counter < self.L && iter_counter < 3000000 {
             let last_cost = self.path.get_cost() + self.temp;
             self.path.get_neighbor(&mut self.cities);
             let new_cost = self.path.get_cost();
-            iter_counter+=1;
+            iter_counter += 1;
             if new_cost < last_cost {
-                //println!("E:{:.20}", new_cost);
+                println!("E:{:.20}", new_cost);
                 counter += 1;
                 r += new_cost;
 
@@ -79,7 +94,6 @@ impl SimAnn {
                 self.path.undo(&mut self.cities);
             }
         }
-        //dbg!(iter_counter);
         r / f64::try_from(self.L).unwrap()
     }
 
@@ -87,27 +101,22 @@ impl SimAnn {
     /// Runs the simulated annealing algorithm with threshold acceptance over the subset
     /// of cities passed when initializing instance
     ///
-    /// #Return types
+    /// # Return types
     /// Returns a tuple with the first element being the evaluation of the best solution found,
     /// then the path oc cities, the seed used for finding neighbors and the seed used for the
     /// initial solution.
     pub fn threshold_acceptance(&mut self) -> (f64, Vec<usize>, u64, u64) {
-        
-        
         self.path.prepare();
         self.cities = self
             .path
             .get_initial_solution(&mut self.cities, self.initial_sol_seed);
-        //prepare initial temp
-        self.temp = self.initial_temp( &mut self.cities.clone(),32.0, 0.9 );
+
+        self.temp = self.initial_temp(&mut self.cities.clone(), 32.0, 0.9);
         println!("IT:{}", self.temp);
-        //
 
-
-        
         self.path.add_initial_distance();
 
-        let mut batch_average: f64 =0.0;// 1000000000.0;
+        let mut batch_average: f64 = 0.0; //1000000000.0;
         while self.temp > self.epsilon {
             let mut q: f64 = f64::INFINITY;
             while batch_average < q {
@@ -116,23 +125,23 @@ impl SimAnn {
             }
 
             self.temp = self.phi * self.temp;
-            //println!("T:{}", self.temp);
+            println!("T:{}", self.temp);
         }
-  
+
         let mut cities = self.best_path.clone();
         let mut sweep = self.sweep(&mut cities);
-        let mut best_sweep = (self.best_eval, cities); 
+        let mut best_sweep = (self.best_eval, cities);
         loop {
-            let mut new_sweep = self.sweep(&mut sweep.1.clone());
+            let new_sweep = self.sweep(&mut sweep.1.clone());
 
             if &new_sweep.0 < &best_sweep.0 {
                 best_sweep = new_sweep.clone();
             }
-            //new_sweep = self.sweep(&mut sweep.1.clone());
+
             if &new_sweep.0 >= &sweep.0 {
                 break;
             }
-            
+
             sweep = new_sweep;
         }
         self.best_eval = sweep.0;
@@ -142,6 +151,7 @@ impl SimAnn {
         println!("P:{:?}", self.best_path);
         println!("N:{}", self.neighbor_seed);
         println!("I:{}", self.initial_sol_seed);
+
         (
             self.best_eval,
             self.best_path.clone(),
@@ -150,11 +160,13 @@ impl SimAnn {
         )
     }
 
-    pub fn sweep(&mut self, cities: &mut [usize]) -> (f64, Vec<usize>) {
+    /// Sweep function performed after the heuristic and tries to find the path at the
+    /// local minima.
+    fn sweep(&mut self, cities: &mut [usize]) -> (f64, Vec<usize>) {
         let mut path: Path = Path::new(cities.len(), &cities.to_vec(), 123);
         path.prepare();
         let norm = path.get_normalizer();
-       
+
         let mut best_cost: f64 = path.add_dist(cities) / norm;
 
         let mut best_path = cities.to_vec();
@@ -167,14 +179,13 @@ impl SimAnn {
 
         for i in 0..cities.len() - 1 {
             for j in (i + 1)..cities.len() {
-                
                 swap(cities, i, j);
-                
+
                 let new_cost: f64 = path.add_dist(cities) / norm;
-                
+
                 if new_cost < best_cost {
-                   // println!("E:{}" , new_cost);
-                   // println!("ES:{}" , new_cost);
+                    println!("E:{}" , new_cost);
+                    println!("ES:{}" , new_cost);
                     best_cost = new_cost;
                     best_path = cities.to_vec().clone();
                 }
@@ -186,6 +197,8 @@ impl SimAnn {
         (best_cost, best_path)
     }
 
+    /// Function that performs the heuristic used to find the initial temperature
+    /// for an initial solution.
     fn initial_temp(&mut self, s: &mut [usize], mut t: f64, p: f64) -> f64 {
         let mut percentage = self.accepted_percentage(s, t);
         let t1: f64;
@@ -214,6 +227,7 @@ impl SimAnn {
         self.binary_search(s, t1, t2, p)
     }
 
+    /// Calculates the percentage of accepted solutions using a certain temperature.
     fn accepted_percentage(&mut self, s: &mut [usize], t: f64) -> f64 {
         let n = 1000;
         let mut counter = 0;
@@ -232,6 +246,7 @@ impl SimAnn {
         f64::try_from(counter).unwrap() / f64::try_from(n).unwrap()
     }
 
+    /// Performs binary search to get the best temperature for a certain initial solution.
     fn binary_search(&mut self, s: &mut [usize], t1: f64, t2: f64, p: f64) -> f64 {
         let tm: f64 = (t1 + t2) / 2.0;
         if (t2 - t1) < self.epsilon_p {

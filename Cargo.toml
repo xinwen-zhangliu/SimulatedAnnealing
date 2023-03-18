@@ -2,8 +2,6 @@
 name = "simulated_annealing"
 version = "0.1.0"
 edition = "2021"
-[env]
-DATABASE = {value = "db/citiesDB.db", relative = true, force = true}
 [dependencies]
 sqlite = "0.30.4"
 libm = "0.2.6"

@@ -3,21 +3,22 @@ use crate::City;
 
 use sqlite::Connection;
 
+/// Struct for accessing and reading the database of cities
 pub struct Reader {
     connection: Connection,
 }
 
-impl Reader {
-    fn open_connection(path: &str) -> Connection {
-        Connection::open(path).unwrap()
-    }
 
+impl Reader {
+    /// Constructor
     pub fn new(path: &str) -> Reader {
         Reader {
             connection: Connection::open(path).unwrap(),
         }
     }
 
+    /// From the vector of cities that is passes the function will return the distances
+    /// between each pair in an ordered vector from highest to lowest.
     pub fn get_distances_ordered(&self, cities: &Vec<usize>) -> Vec<f64> {
         let begin: &str = "(";
         let end: &str = ")";
@@ -36,9 +37,6 @@ impl Reader {
             + &list
             + &" ORDER BY distance DESC;".to_owned();
 
-        //  let query = "SELECT distances FROM connections
-        // WHERE id_city_1 IN :cities AND id_city_2 IN :cities ORDER BY DESC;";
-
         let mut distances: Vec<f64> = Vec::new();
         for row in self
             .connection
@@ -54,6 +52,8 @@ impl Reader {
         distances
     }
 
+    /// Gets all the cities form that database, maps them to struct City and returns
+    /// a vector with each of them.
     pub fn read_cities(&self) -> Vec<City> {
         let mut all_cities: Vec<City> = Vec::new();
         for row in self
@@ -73,6 +73,7 @@ impl Reader {
         all_cities
     }
 
+    /// Gets all the connections from the database and saves the distances in a 2D vector
     pub fn read_connections(&self) -> Vec<Vec<f64>> {
         let query = "SELECT * FROM connections;";
        

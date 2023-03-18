@@ -1,3 +1,4 @@
+/// Struct that has the default subset of  40 and 150 cities
 pub struct Cases {
     pub l40: Vec<usize>,
     pub l150: Vec<usize>,
