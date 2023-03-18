@@ -23,6 +23,7 @@ pub struct Path {
 }
 
 impl Path {
+
     /// Constructor
     /// # Arguments
     ///

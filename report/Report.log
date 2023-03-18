@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.24 (TeX Live 2022/Arch Linux) (preloaded format=pdflatex 2023.2.16)  17 MAR 2023 20:42
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (TeX Live 2022/Arch Linux) (preloaded format=pdflatex 2023.2.16)  17 MAR 2023 23:07
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -716,13 +716,13 @@ Underfull \hbox (badness 10000) in paragraph at lines 60--61
 
  []
 
-LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 6
-9.
+LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 7
+0.
 (/usr/share/texmf-dist/tex/latex/psnfss/ts1ptm.fd
 File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
 )
-LaTeX Font Info:    Trying to load font information for OT1+pcr on input line 6
-9.
+LaTeX Font Info:    Trying to load font information for OT1+pcr on input line 7
+0.
 
 (/usr/share/texmf-dist/tex/latex/psnfss/ot1pcr.fd
 File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
@@ -730,19 +730,172 @@ File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
 
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
-Underfull \hbox (badness 10000) in paragraph at lines 90--91
+Underfull \hbox (badness 10000) in paragraph at lines 93--94
 
  []
 
-[2] (./Report.bbl) [3] (./Report.aux) ) 
+
+Underfull \hbox (badness 10000) in paragraph at lines 95--96
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 97--98
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 99--100
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 101--102
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 103--104
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 109--110
+
+ []
+
+<first_solution.pdf, id=15, 929.4725pt x 988.69376pt>
+File: first_solution.pdf Graphic file (type pdf)
+<use first_solution.pdf>
+Package pdftex.def Info: first_solution.pdf  used on input line 120.
+(pdftex.def)             Requested size: 929.47025pt x 988.69136pt.
+File: first_solution.pdf Graphic file (type pdf)
+<use first_solution.pdf>
+Package pdftex.def Info: first_solution.pdf  used on input line 120.
+(pdftex.def)             Requested size: 929.47025pt x 988.69136pt.
+<first_solution.pdf, id=18, page=1, 929.4725pt x 988.69376pt>
+File: first_solution.pdf Graphic file (type pdf)
+<use first_solution.pdf, page 1>
+Package pdftex.def Info: first_solution.pdf , page1 used on input line 120.
+(pdftex.def)             Requested size: 929.47025pt x 988.69136pt.
+File: first_solution.pdf Graphic file (type pdf)
+<use first_solution.pdf, page 1>
+Package pdftex.def Info: first_solution.pdf , page1 used on input line 120.
+(pdftex.def)             Requested size: 597.79617pt x 635.8847pt.
+[2]
+File: first_solution.pdf Graphic file (type pdf)
+<use first_solution.pdf, page 1>
+Package pdftex.def Info: first_solution.pdf , page1 used on input line 120.
+(pdftex.def)             Requested size: 597.79617pt x 635.8847pt.
+File: first_solution.pdf Graphic file (type pdf)
+<use first_solution.pdf, page 1>
+Package pdftex.def Info: first_solution.pdf , page1 used on input line 120.
+(pdftex.def)             Requested size: 597.79617pt x 635.8847pt.
+File: first_solution.pdf Graphic file (type pdf)
+<use first_solution.pdf, page 1>
+Package pdftex.def Info: first_solution.pdf , page1 used on input line 120.
+(pdftex.def)             Requested size: 597.79617pt x 635.8847pt.
+ [3 <./first_solution.pdf>]
+Underfull \hbox (badness 10000) in paragraph at lines 122--123
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 124--125
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 126--127
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 131--132
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 134--135
+
+ []
+
+<c40-0.26371.pdf, id=35, 929.4725pt x 988.69376pt>
+File: c40-0.26371.pdf Graphic file (type pdf)
+<use c40-0.26371.pdf>
+Package pdftex.def Info: c40-0.26371.pdf  used on input line 143.
+(pdftex.def)             Requested size: 929.47025pt x 988.69136pt.
+File: c40-0.26371.pdf Graphic file (type pdf)
+<use c40-0.26371.pdf>
+Package pdftex.def Info: c40-0.26371.pdf  used on input line 143.
+(pdftex.def)             Requested size: 929.47025pt x 988.69136pt.
+<c40-0.26371.pdf, id=38, page=1, 929.4725pt x 988.69376pt>
+File: c40-0.26371.pdf Graphic file (type pdf)
+<use c40-0.26371.pdf, page 1>
+Package pdftex.def Info: c40-0.26371.pdf , page1 used on input line 143.
+(pdftex.def)             Requested size: 929.47025pt x 988.69136pt.
+File: c40-0.26371.pdf Graphic file (type pdf)
+<use c40-0.26371.pdf, page 1>
+Package pdftex.def Info: c40-0.26371.pdf , page1 used on input line 143.
+(pdftex.def)             Requested size: 597.79617pt x 635.8847pt.
+[4]
+File: c40-0.26371.pdf Graphic file (type pdf)
+<use c40-0.26371.pdf, page 1>
+Package pdftex.def Info: c40-0.26371.pdf , page1 used on input line 143.
+(pdftex.def)             Requested size: 597.79617pt x 635.8847pt.
+File: c40-0.26371.pdf Graphic file (type pdf)
+<use c40-0.26371.pdf, page 1>
+Package pdftex.def Info: c40-0.26371.pdf , page1 used on input line 143.
+(pdftex.def)             Requested size: 597.79617pt x 635.8847pt.
+File: c40-0.26371.pdf Graphic file (type pdf)
+<use c40-0.26371.pdf, page 1>
+Package pdftex.def Info: c40-0.26371.pdf , page1 used on input line 143.
+(pdftex.def)             Requested size: 597.79617pt x 635.8847pt.
+ [5 <./c40-0.26371.pdf>]
+<c150-0.144182.pdf, id=55, 929.4725pt x 988.69376pt>
+File: c150-0.144182.pdf Graphic file (type pdf)
+<use c150-0.144182.pdf>
+Package pdftex.def Info: c150-0.144182.pdf  used on input line 146.
+(pdftex.def)             Requested size: 929.47025pt x 988.69136pt.
+File: c150-0.144182.pdf Graphic file (type pdf)
+<use c150-0.144182.pdf>
+Package pdftex.def Info: c150-0.144182.pdf  used on input line 146.
+(pdftex.def)             Requested size: 929.47025pt x 988.69136pt.
+<c150-0.144182.pdf, id=58, page=1, 929.4725pt x 988.69376pt>
+File: c150-0.144182.pdf Graphic file (type pdf)
+<use c150-0.144182.pdf, page 1>
+Package pdftex.def Info: c150-0.144182.pdf , page1 used on input line 146.
+(pdftex.def)             Requested size: 929.47025pt x 988.69136pt.
+File: c150-0.144182.pdf Graphic file (type pdf)
+<use c150-0.144182.pdf, page 1>
+Package pdftex.def Info: c150-0.144182.pdf , page1 used on input line 146.
+(pdftex.def)             Requested size: 597.79617pt x 635.8847pt.
+File: c150-0.144182.pdf Graphic file (type pdf)
+<use c150-0.144182.pdf, page 1>
+Package pdftex.def Info: c150-0.144182.pdf , page1 used on input line 146.
+(pdftex.def)             Requested size: 597.79617pt x 635.8847pt.
+File: c150-0.144182.pdf Graphic file (type pdf)
+<use c150-0.144182.pdf, page 1>
+Package pdftex.def Info: c150-0.144182.pdf , page1 used on input line 146.
+(pdftex.def)             Requested size: 597.79617pt x 635.8847pt.
+File: c150-0.144182.pdf Graphic file (type pdf)
+<use c150-0.144182.pdf, page 1>
+Package pdftex.def Info: c150-0.144182.pdf , page1 used on input line 146.
+(pdftex.def)             Requested size: 597.79617pt x 635.8847pt.
+ [6 <./c150-0.144182.pdf>]
+Underfull \hbox (badness 10000) in paragraph at lines 148--149
+
+ []
+
+[7] (./Report.bbl) [8] (./Report.aux) ) 
 Here is how much of TeX's memory you used:
- 14698 strings out of 478238
- 265662 string characters out of 5850456
- 553661 words of memory out of 5000000
- 32660 multiletter control sequences out of 15000+600000
+ 14737 strings out of 478238
+ 266693 string characters out of 5850456
+ 555661 words of memory out of 5000000
+ 32693 multiletter control sequences out of 15000+600000
  481478 words of font info for 51 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 85i,8n,90p,479b,994s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 85i,17n,90p,571b,994s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texmf-dist/fonts/enc/dvips/b
 ase/8r.enc}</usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></u
 sr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texmf-
@@ -750,10 +903,10 @@ dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texmf-dist/fonts/typ
 e1/urw/courier/ucrr8a.pfb></usr/share/texmf-dist/fonts/type1/urw/times/utmb8a.p
 fb></usr/share/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/share/texmf-di
 st/fonts/type1/urw/times/utmri8a.pfb>
-Output written on Report.pdf (3 pages, 86144 bytes).
+Output written on Report.pdf (8 pages, 4793556 bytes).
 PDF statistics:
- 53 PDF objects out of 1000 (max. 8388607)
- 33 compressed objects within 1 object stream
+ 112 PDF objects out of 1000 (max. 8388607)
+ 66 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 13 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 73 words of extra memory for PDF output out of 10000 (max. 10000000)
 
