@@ -4,6 +4,10 @@
 ```
 cargo run --release
 ```
+for just compiling 
+```
+cargo build --release
+```
 and without optimizations
 ```
 cargo run
