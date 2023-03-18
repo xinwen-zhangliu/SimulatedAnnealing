@@ -142,7 +142,7 @@ Esto parece contraintuitivo, pero si consideramos que  casos con menores ciudade
 
 Del mismo modo el porcentaje de de soluciones factibles parece bajar al incrementar el n\'umero de ciudades, ya que cada vez se vuelve m\'as dif\'icil encontrar soluciones factibles. Con 40 ciudades el porcentaje de soluciones factibles oscilaba entre 80 -90\% , en cambio con 150 ciudades estaba en 70-80\% , y con 200 ciudades 40-50\% aproximadamente.\\
 
-Tal vez el hecho de combinar el generar una temperatura incial con un mayor porcentaje de aceptaci\'on y tener una epsilon con un valor bastante bajo, llev\'o a que durante la exploraci\'on encontrara un camino o direcci\'on  favorable y se epecializara de manera decisiva por el final hasta llegar a la soluci\'on m\'as m\'inima. Esto igual se puede ver en el n\'umero de iteraciones del algoritmo de barrido, para 40 ciudades donde la epsilon era myor el barrido corre varias veces, en cambio para las soluciones de 150 como epsilon es menor y las soluciones est\'as m\'as cerca del m\'inimo local, el barrido solo corre unas cuantas veces.
+Probablemente el hecho de combinar el generar una temperatura incial con un mayor porcentaje de aceptaci\'on y tener una epsilon con un valor bastante bajo, llev\'o a que durante la exploraci\'on encontrara un camino o direcci\'on  favorable y se epecializara de manera decisiva por el final hasta llegar a la soluci\'on m\'as m\'inima. Esto igual se puede ver en el n\'umero de iteraciones del algoritmo de barrido, para 40 ciudades donde la epsilon era myor el barrido corre varias veces, en cambio para las soluciones de 150 como epsilon es menor y las soluciones est\'as m\'as cerca del m\'inimo local, el barrido solo corre unas cuantas veces.
 
 \subsection*{Gr\'aficas de las mejores soluciones}
 \includepdf[]{c40-0.26371.pdf}
@@ -202,7 +202,7 @@ Para poder correr esta instancia, ejecutar lo siguiente desde la l\'inea de coma
 \end{itemize}
 Primero se debe de cambiar la siguiete l\'inea de c\'odigo dentro del archivo \texttt{sa.rs}
 \begin{lstlisting}
-  105 let mut batch_average = 
+  105 let mut batch_average = 1000000000.0;
 \end{lstlisting}
 
 despu\'es, ejecutar lo siguiente desde la l\'inea de comandos.
