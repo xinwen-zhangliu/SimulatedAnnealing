@@ -1,20 +1,32 @@
-use itertools::Itertools;
+use crate::sa::SimAnn;
 use rand::Rng;
 use std::thread::JoinHandle;
 use std::{sync::mpsc, thread};
-use crate::sa::SimAnn;
 
+/// Struct used to spawn threads and run multiple simulated annealing algorithms
+/// at the same time.
 pub struct TSI {
     num_of_threads: usize,
 }
 
 impl TSI {
+
+    /// Constructor 
     pub fn new() -> Self {
         Self {
             num_of_threads: num_cpus::get(),
         }
     }
 
+    /// Spawns threads that run the simulated annealing algorithm using the parameters passed
+    /// # Arguments
+    /// * `num` - The number of times to run the algorithm (this is divided ny the number of threads available)
+    /// * `epsilon` - The minimum temperature to reach before stopping
+    /// * `phi` - The rate at which the temparature cools down
+    /// * `batch_size` - The batch size for the algorithm
+    /// * `cities` - The list of cities over which to perform the algoritm over
+    /// *  `initial_sol_seed` - The seed used to generate the initial solution
+    /// * `neighbor_seed` - The seed used to find neighboring solutions
     pub fn spawn_threads(
         &mut self,
         num: usize,
@@ -26,7 +38,7 @@ impl TSI {
         cities: Vec<usize>,
     ) {
         let num_iter = num / self.num_of_threads;
-        if initial_sol_seed != 0 &&  neighbor_seed != 0 {
+        if initial_sol_seed != 0 && neighbor_seed != 0 {
             let mut sol: SimAnn = SimAnn::new(
                 epsilon,
                 phi,
@@ -70,14 +82,8 @@ impl TSI {
                 let mut best_tuple = (f64::INFINITY, vec![0usize; 40], 0, 0);
                 loop {
                     counter += 1;
-                    let mut sol: SimAnn = SimAnn::new(
-                        epsilon,
-                        phi,
-                        &cities,
-                        batch_size,
-                        r.gen(),
-                        r.gen(),
-                    );
+                    let mut sol: SimAnn =
+                        SimAnn::new(epsilon, phi, &cities, batch_size, r.gen(), r.gen());
 
                     let new_tuple = sol.threshold_acceptance();
                     if new_tuple.0 < 1.0 {

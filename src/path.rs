@@ -8,7 +8,7 @@ use std::env;
 use std::f64::consts::PI;
 
 #[allow(non_snake_case)]
-
+/// Path struct that contains all the operations you can perform over it
 pub struct Path {
     initial_solution: Vec<usize>,
     num_of_cities: usize,
@@ -23,10 +23,14 @@ pub struct Path {
 }
 
 impl Path {
+
+    /// Constructor
+    /// # Arguments
+    ///
+    /// * `num` - The number of cities
+    /// * `cities` - Vector of cities
+    /// * `seed` - Seed for generating the initial solution
     pub fn new(num: usize, cities: &Vec<usize>, seed: u64) -> Self {
-        // let db_path = std::env::var_os("CARGO_MANIFEST_DIR").unwrap();
-        // let path_str = db_path.into_string().unwrap();
-        // let reader : Reader = Reader::new(&path_str);
         Self {
             initial_solution: cities.clone(),
             num_of_cities: num,
@@ -48,8 +52,10 @@ impl Path {
         }
     }
 
+    /// Calls reader to get the required information from the database,
+    /// computes de normalizer and fills all the missing distances.
     pub fn prepare(&mut self) {
-        let db_path = env::var("CARGO_MANIFEST_DIR").unwrap_or_else(|x| "../..".to_string());
+        let db_path = env::var("CARGO_MANIFEST_DIR").unwrap_or("../..".to_string());
         let path_str = db_path + "/db/citiesDB.db";
         let reader: Reader = Reader::new(&path_str);
 
@@ -74,6 +80,7 @@ impl Path {
     pub fn get_normalizer(&self) -> f64 {
         self.normalizer
     }
+
     pub fn set_initial_solution(&mut self, arr: &mut [usize]) {
         self.initial_solution = arr.to_vec();
     }
@@ -82,9 +89,9 @@ impl Path {
         self.sum_of_distances
     }
 
+    /// Computes the normalizer and finds the max_distance
     fn normalizer(&mut self, reader: &Reader) {
-        let mut arr: Vec<f64> = vec![0.0f64; self.num_of_cities as usize];
-        arr = reader.get_distances_ordered(&self.initial_solution);
+        let arr: Vec<f64> = reader.get_distances_ordered(&self.initial_solution);
         self.max_distance = arr[0];
         let mut norm: f64 = 0.0;
         let mut range: usize = self.num_of_cities as usize;
@@ -102,11 +109,14 @@ impl Path {
         self.normalizer = norm;
     }
 
+    /// Gets the connections and cities from database and saves them as attributes.
     fn get_cities_connections(&mut self, reader: &Reader) {
         self.all_connections = reader.read_connections();
         self.all_cities = reader.read_cities();
     }
 
+    /// Adds the distances between a list oc cities in that specific order
+    /// * `cities` - The cities to compute
     pub fn add_dist(&self, cities: &[usize]) -> f64 {
         let mut sum: f64 = 0.0;
         for i in 1..self.num_of_cities as usize {
@@ -117,6 +127,7 @@ impl Path {
         sum
     }
 
+    /// Adds the distances in that order from the initial_solution.
     pub fn add_initial_distance(&mut self) {
         let mut sum: f64 = 0.0;
         for i in 1..self.num_of_cities as usize {
@@ -145,12 +156,17 @@ impl Path {
     /// # Arguments
     ///
     /// * `city1` - A City instance
-    /// * `city21 - A City instance
+    /// * `city2` - A City instance
     pub fn get_unknown_distance(&mut self, city1: City, city2: City) -> f64 {
         self.get_nat_distance(city1, city2) * self.max_distance
     }
 
     ///Calculates the natural distance between two cities
+    ///  # Arguments
+    ///
+    /// * `city1` - A City instance
+    /// * `city2` - A City instance
+    #[allow(non_snake_case)]
     pub fn get_nat_distance(&self, city1: City, city2: City) -> f64 {
         let A = pow(
             sin((Self::to_rad(city2.lat) - Self::to_rad(city1.lat)) / 2.0),
@@ -173,6 +189,9 @@ impl Path {
     }
 
     ///Modifies the passed vector and randomly generates from a seed an initial solution
+    /// # Arguments
+    /// * `cities` - The vec of cities to modify
+    /// * `seed` - The seed to use in the randomizer
     pub fn get_initial_solution(&mut self, cities: &mut Vec<usize>, seed: u64) -> Vec<usize> {
         let mut r = StdRng::seed_from_u64(seed);
         for i in 0..self.num_of_cities as usize {
@@ -189,6 +208,8 @@ impl Path {
     }
 
     ///Modifies the passed slice and swaps two cities creating a neighboring solution
+    /// # Arguments
+    /// * `cities` - The slice of cities to modify
     pub fn get_neighbor(&mut self, cities: &mut [usize]) {
         self.n1 = self.r.gen::<usize>() % self.num_of_cities;
         self.n2 = self.r.gen::<usize>() % self.num_of_cities;
@@ -209,15 +230,6 @@ impl Path {
         let new_distances: f64 = self.get_sum(cities);
 
         //adding and substracitng the distances to set the new updated sum of distances
-        self.sum_of_distances = self.sum_of_distances - previous_distances + new_distances;
-    }
-
-    pub fn swap(&mut self, cities: &mut [usize]) {
-        let previous_distances: f64 = self.get_sum(cities);
-        let value = cities[self.n1 as usize];
-        cities[self.n1 as usize] = cities[self.n2 as usize];
-        cities[self.n2 as usize] = value;
-        let new_distances: f64 = self.get_sum(cities);
         self.sum_of_distances = self.sum_of_distances - previous_distances + new_distances;
     }
 
@@ -268,9 +280,10 @@ impl Path {
         sum
     }
 
-    ///
+    
     ///Function that returns a vector of city ids to its previous state
-    ///
+    /// # Arguments
+    /// * `cities` - The slice of cities to modify 
     pub fn undo(&mut self, cities: &mut [usize]) {
         let previous = self.get_sum(cities);
         let value = cities[self.n1];
